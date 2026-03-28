@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeoGuard Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <canvas id="hero-canvas" aria-hidden="true"></canvas>
+
+      <header class="app-header glass-card reveal">
+        <div>
+          <p class="eyebrow">Smart Neonatal Monitoring Cloth System</p>
+          <h1>NeoGuard</h1>
+        </div>
+        <div class="device-connect-panel">
+          <label class="device-input-group" for="device-ip-input">
+            <span>ESP32 Local IP</span>
+            <input id="device-ip-input" type="text" inputmode="decimal" placeholder="192.168.1.50" />
+          </label>
+          <button id="connect-device" type="button">Connect</button>
+          <div class="device-pill">
+            <span>Connected Device</span>
+            <strong id="device-ip">Not connected</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard-grid">
+        <section class="hero-card glass-card reveal">
+          <div>
+            <p class="eyebrow">Live Safety Overview</p>
+            <h2 id="safety-condition">Awaiting device data</h2>
+          </div>
+          <div class="hero-statuses">
+            <div>
+              <span>Heater</span>
+              <strong id="heater-state">OFF</strong>
+            </div>
+            <div>
+              <span>Safety Relay</span>
+              <strong id="relay-state">OFF</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="metrics-grid">
+          <article class="metric-card glass-card reveal">
+            <span>Baby Temp</span>
+            <strong id="baby-temp">--.-</strong>
+            <small>Target 36.5 to 37.5 degrees C</small>
+          </article>
+          <article class="metric-card glass-card reveal">
+            <span>SpO2</span>
+            <strong id="spo2">--</strong>
+            <small>Peripheral oxygen saturation</small>
+          </article>
+          <article class="metric-card glass-card reveal">
+            <span>Heart Rate</span>
+            <strong id="heart-rate">--</strong>
+            <small>Beats per minute</small>
+          </article>
+          <article class="metric-card glass-card reveal">
+            <span>Env Temp</span>
+            <strong id="env-temp">--.-</strong>
+            <small>Incubator cloth environment</small>
+          </article>
+          <article class="metric-card glass-card reveal accent">
+            <span>Pulse Sensor</span>
+            <strong id="pulse">--</strong>
+            <small>Analog pulse backup</small>
+          </article>
+        </section>
+
+        <section class="controls-card glass-card reveal">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Controls</p>
+              <h2>Manual Actions</h2>
+            </div>
+            <p id="command-status">Ready</p>
+          </div>
+
+          <div class="control-group">
+            <div>
+              <span>Heating Indicator</span>
+              <small>Manual override through server API</small>
+            </div>
+            <div class="button-row">
+              <button data-target="heater" data-state="on">Heater ON</button>
+              <button data-target="heater" data-state="off" class="secondary">Heater OFF</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <div>
+              <span>UV Sterilization</span>
+              <small>Manual website-only relay control</small>
+            </div>
+            <div class="button-row">
+              <button data-target="uv" data-state="on">UV ON</button>
+              <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+    <script src="https://unpkg.com/three@0.163.0/build/three.min.js"></script>
+    <script src="./animations.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
