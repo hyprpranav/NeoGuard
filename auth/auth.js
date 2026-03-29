@@ -7,6 +7,7 @@ firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
 const auth = firebase.auth();
 const database = firebase.database();
 const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
+const PENDING_REQUEST_KEY = 'neoguard-pending-request-email';
 
 const signupState = {
   accountCreated: false,
@@ -38,6 +39,30 @@ function showStatus(tabName, message, type) {
   if (type !== 'warning') {
     setTimeout(() => statusEl.classList.remove('show'), 5000);
   }
+}
+
+function setWaitingNote(message) {
+  const waitingEl = document.getElementById('signup-waiting');
+  if (!waitingEl) return;
+
+  if (!message) {
+    waitingEl.textContent = '';
+    waitingEl.classList.remove('show');
+    return;
+  }
+
+  waitingEl.textContent = message;
+  waitingEl.classList.add('show');
+}
+
+function setSignupBusy(isBusy, verifyLabel = 'Verify Email', requestLabel = 'Request Access') {
+  const verifyBtn = document.getElementById('signup-btn');
+  const requestBtn = document.getElementById('request-access-btn');
+
+  verifyBtn.disabled = isBusy;
+  requestBtn.disabled = isBusy;
+  verifyBtn.textContent = verifyLabel;
+  requestBtn.textContent = requestLabel;
 }
 
 function clearErrors(prefix) {
@@ -153,7 +178,7 @@ async function handleSignUp() {
     return;
   }
 
-  document.getElementById('signup-btn').disabled = true;
+  setSignupBusy(true, 'Sending Verification...', 'Request Access');
   showStatus('signup', 'Creating account and sending verification mail...', 'info');
 
   try {
@@ -168,6 +193,7 @@ async function handleSignUp() {
 
     document.getElementById('request-access-btn').style.display = 'block';
     showStatus('signup', 'IMPORTANT: Please verify your email from INBOX/SPAM/JUNK, then click REQUEST ACCESS below.', 'warning');
+    setWaitingNote('Waiting for your email verification. After verifying mail, click Request Access.');
   } catch (error) {
     console.error(error);
     if (error.code === 'auth/email-already-in-use') {
@@ -177,7 +203,7 @@ async function handleSignUp() {
     }
   }
 
-  document.getElementById('signup-btn').disabled = false;
+  setSignupBusy(false, 'Verify Email', 'Request Access');
 }
 
 async function handleRequestAccess() {
@@ -192,6 +218,9 @@ async function handleRequestAccess() {
     return;
   }
 
+  setSignupBusy(true, 'Verify Email', 'Verifying Email...');
+  showStatus('signup', 'Checking your email verification status...', 'info');
+
   let user = auth.currentUser;
 
   try {
@@ -204,8 +233,12 @@ async function handleRequestAccess() {
 
     if (!user.emailVerified) {
       showStatus('signup', 'You have not verified email yet. Please verify from inbox/spam/junk and then click REQUEST ACCESS.', 'warning');
+      setSignupBusy(false, 'Verify Email', 'Request Access');
       return;
     }
+
+    showStatus('signup', 'Email verified. Submitting your request to admin...', 'info');
+    setSignupBusy(true, 'Verify Email', 'Submitting Request...');
 
     await database.ref(`users/${user.uid}`).set({
       name,
@@ -217,20 +250,26 @@ async function handleRequestAccess() {
     });
 
     signupState.accountCreated = false;
+    localStorage.setItem(PENDING_REQUEST_KEY, email);
     showStatus('signup', 'Request submitted successfully. Admin will now see your account in pending approvals.', 'success');
+    setWaitingNote('Request submitted to admin. Please wait for approval before signing in.');
 
     await auth.signOut();
 
     setTimeout(() => {
-      document.getElementById('signup-name').value = '';
-      document.getElementById('signup-email').value = '';
-      document.getElementById('signup-password').value = '';
-      document.getElementById('request-access-btn').style.display = 'none';
-      switchTab('signin');
+      switchTab('signin', document.getElementById('signin-tab-btn'));
+      showStatus('signin', 'Request submitted to admin. Please wait for approval.', 'info');
     }, 2500);
   } catch (error) {
     console.error(error);
-    showStatus('signup', error.message || 'Unable to request access. Please try again.', 'error');
+    if (error.code === 'PERMISSION_DENIED' || (error.message || '').toLowerCase().includes('permission_denied')) {
+      showStatus('signup', 'Permission denied while submitting. Admin must publish latest Firebase rules, then retry Request Access.', 'error');
+      setWaitingNote('Submission blocked by Firebase rules. Please ask admin to publish rules and retry.');
+    } else {
+      showStatus('signup', error.message || 'Unable to request access. Please try again.', 'error');
+    }
+  } finally {
+    setSignupBusy(false, 'Verify Email', 'Request Access');
   }
 }
 
@@ -252,8 +291,14 @@ async function handleForgotPassword() {
 auth.onAuthStateChanged((user) => {
   if (!localStorage.getItem('neoguard-auth')) {
     const requestBtn = document.getElementById('request-access-btn');
+    const pendingEmail = localStorage.getItem(PENDING_REQUEST_KEY);
+
     if (requestBtn) {
       requestBtn.style.display = user ? 'block' : 'none';
+    }
+
+    if (pendingEmail) {
+      setWaitingNote(`Request for ${pendingEmail} is pending admin approval.`);
     }
   }
 

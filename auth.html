@@ -60,8 +60,8 @@
 
       .auth-card {
         background: rgba(17, 25, 55, 0.68);
-        backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 24px;
         padding: 40px 30px;
@@ -263,6 +263,21 @@
       #request-access-btn {
         display: none;
       }
+
+      .waiting-note {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(123, 125, 255, 0.18);
+        border: 1px solid rgba(123, 125, 255, 0.4);
+        color: #d8dcff;
+        font-size: 0.82rem;
+        display: none;
+      }
+
+      .waiting-note.show {
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -331,6 +346,8 @@
             <button class="btn-primary" id="signup-btn" onclick="handleSignUp()">Verify Email</button>
             <button class="btn-secondary" id="request-access-btn" onclick="handleRequestAccess()">Request Access</button>
           </div>
+
+          <div id="signup-waiting" class="waiting-note"></div>
 
           <div class="divider">Step 1: Verify email. Step 2: Request access for admin approval.</div>
         </div>
