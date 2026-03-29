@@ -4,9 +4,15 @@ const state = {
   latest: null,
   user: null,
   deviceId: DEVICE_ID,
+  connection: null,
+  isLive: false,
+  historyRows: [],
   telemetryRef: null,
   statusRef: null,
 };
+
+const HEATER_PIN = '0000';
+const LIVE_TIMEOUT_MS = 15000;
 
 const elements = {
   logoutButton: document.getElementById('logout-btn'),
@@ -24,6 +30,14 @@ const elements = {
   wifiState: document.getElementById('wifi-state'),
   cloudState: document.getElementById('cloud-state'),
   commandStatus: document.getElementById('command-status'),
+  historyCard: document.getElementById('history-card'),
+  historyNote: document.getElementById('history-note'),
+  historyLastLive: document.getElementById('history-last-live'),
+  viewHistoryButton: document.getElementById('view-history-btn'),
+  downloadHistoryButton: document.getElementById('download-history-btn'),
+  historyModal: document.getElementById('history-modal'),
+  historyList: document.getElementById('history-list'),
+  historyCloseButton: document.getElementById('history-close-btn'),
   buttons: Array.from(document.querySelectorAll('button[data-target]')),
 };
 
@@ -76,14 +90,68 @@ function render(data) {
   elements.heaterState.className = data.heaterOn ? 'safe' : 'warning';
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
   elements.relayState.className = data.safetyRelayOn ? 'safe' : 'danger';
-  elements.cloudState.textContent = 'SYNCED';
-  elements.cloudState.className = 'safe';
+
+  if (data.updatedAt) {
+    elements.historyLastLive.textContent = `Last data: ${formatTimestamp(data.updatedAt)}`;
+  }
+
+  applyLiveState();
 }
 
 function renderConnection(connectionStatus) {
-  const connected = Boolean(connectionStatus?.wifiConnected);
+  state.connection = connectionStatus || {};
+  const connected = Boolean(state.connection?.wifiConnected);
   elements.wifiState.textContent = connected ? 'CONNECTED' : 'OFFLINE';
   elements.wifiState.className = connected ? 'safe' : 'danger';
+  applyLiveState();
+}
+
+function formatTimestamp(value) {
+  if (!value) {
+    return 'Unknown';
+  }
+
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric)) {
+    return new Date(numeric).toLocaleString();
+  }
+
+  return new Date(value).toLocaleString();
+}
+
+function isFreshTimestamp(value, timeoutMs) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) {
+    return false;
+  }
+  return Date.now() - numeric <= timeoutMs;
+}
+
+function isDeviceLive() {
+  const wifiConnected = Boolean(state.connection?.wifiConnected);
+  const connectionFresh = isFreshTimestamp(state.connection?.updatedAt, LIVE_TIMEOUT_MS);
+  const telemetryFresh = isFreshTimestamp(state.latest?.updatedAt, LIVE_TIMEOUT_MS);
+  return wifiConnected && (connectionFresh || telemetryFresh);
+}
+
+function applyLiveState() {
+  state.isLive = isDeviceLive();
+
+  if (state.isLive) {
+    elements.cloudState.textContent = 'LIVE';
+    elements.cloudState.className = 'safe';
+    elements.commandStatus.textContent = `System live. Controls enabled for ${state.deviceId}`;
+    elements.historyNote.textContent = 'Live sync active. You can still view and download previous data.';
+  } else {
+    elements.cloudState.textContent = 'DISCONNECTED';
+    elements.cloudState.className = 'danger';
+    elements.commandStatus.textContent = 'System not live. Manual controls are locked.';
+    elements.historyNote.textContent = 'System data is not live. View the previous data when the system is on.';
+  }
+
+  elements.buttons.forEach((button) => {
+    button.disabled = !state.isLive;
+  });
 }
 
 function activeDeviceRoot() {
@@ -146,6 +214,19 @@ async function sendCommand(target, controlState) {
     return;
   }
 
+  if (!state.isLive) {
+    elements.commandStatus.textContent = 'System not live. Control commands are disabled.';
+    return;
+  }
+
+  if (target === 'heater' && controlState === 'on') {
+    const pin = window.prompt('Enter 4-digit heater safety PIN');
+    if (pin !== HEATER_PIN) {
+      elements.commandStatus.textContent = 'Invalid PIN. Heater ON cancelled.';
+      return;
+    }
+  }
+
   elements.commandStatus.textContent = `Sending ${target} ${controlState}...`;
   elements.buttons.forEach((button) => {
     button.disabled = true;
@@ -164,9 +245,79 @@ async function sendCommand(target, controlState) {
   }
 }
 
+function renderHistoryRows(rows) {
+  if (!rows.length) {
+    elements.historyList.innerHTML = '<div class="history-row"><strong>No history available</strong><small>Run device once to populate telemetry history.</small></div>';
+    return;
+  }
+
+  const html = rows.map((row) => {
+    const timestamp = formatTimestamp(row.createdAt || row.updatedAt);
+    return `
+      <div class="history-row">
+        <strong>${timestamp}</strong>
+        <small>Baby: ${formatNumber(row.babyTemp, 1, '°C')} | Env: ${formatNumber(row.envTemp, 1, '°C')} | SpO2: ${formatNumber(row.spo2, 0, '%')} | HR: ${formatNumber(row.heartRate, 0, ' bpm')} | Pulse: ${formatNumber(row.pulse, 0, ' bpm')}</small>
+      </div>
+    `;
+  }).join('');
+
+  elements.historyList.innerHTML = html;
+}
+
+async function loadHistoryRows() {
+  try {
+    const snapshot = await database.ref(`${activeDeviceRoot()}/telemetry/history`).limitToLast(300).once('value');
+    const history = snapshot.val() || {};
+    state.historyRows = Object.values(history).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    renderHistoryRows(state.historyRows);
+  } catch (error) {
+    elements.historyList.innerHTML = `<div class="history-row"><strong>Failed to load history</strong><small>${error.message}</small></div>`;
+  }
+}
+
+function openHistoryModal() {
+  elements.historyModal.classList.add('open');
+  elements.historyModal.setAttribute('aria-hidden', 'false');
+  loadHistoryRows();
+}
+
+function closeHistoryModal() {
+  elements.historyModal.classList.remove('open');
+  elements.historyModal.setAttribute('aria-hidden', 'true');
+}
+
+function downloadHistoryCsv() {
+  const rows = state.historyRows;
+  if (!rows.length) {
+    elements.commandStatus.textContent = 'No history rows available to download.';
+    return;
+  }
+
+  const csv = [
+    'timestamp,baby_temp,env_temp,spo2,heart_rate,pulse,heater_on,uv_on,safety_condition',
+    ...rows.map((row) => `${row.createdAt || row.updatedAt || ''},${row.babyTemp ?? ''},${row.envTemp ?? ''},${row.spo2 ?? ''},${row.heartRate ?? ''},${row.pulse ?? ''},${row.heaterOn ?? ''},${row.uvOn ?? ''},"${(row.safetyCondition || '').replaceAll('"', '""')}"`)
+  ].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${state.deviceId}-history-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 function bindControls() {
   elements.deviceId.value = state.deviceId;
   elements.logoutButton.addEventListener('click', handleLogout);
+  elements.viewHistoryButton.addEventListener('click', openHistoryModal);
+  elements.downloadHistoryButton.addEventListener('click', downloadHistoryCsv);
+  elements.historyCloseButton.addEventListener('click', closeHistoryModal);
+  elements.historyModal.addEventListener('click', (event) => {
+    if (event.target === elements.historyModal) {
+      closeHistoryModal();
+    }
+  });
 
   elements.buttons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -214,11 +365,13 @@ function observeAuth() {
     loadUserProfile(user);
     elements.commandStatus.textContent = `Listening for device ${state.deviceId}`;
     subscribeToDevice();
+    loadHistoryRows();
   });
 }
 
 function initializeDashboard() {
   bindControls();
+  applyLiveState();
   observeAuth();
 }
 

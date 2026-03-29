@@ -81,7 +81,8 @@ select {
 .auth-card,
 .hero-card,
 .controls-card,
-.metric-card {
+.metric-card,
+.history-card {
   position: relative;
   z-index: 1;
 }
@@ -229,6 +230,59 @@ select {
   padding: 22px;
 }
 
+.history-card {
+  padding: 22px;
+}
+
+.history-card p {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.history-list {
+  max-height: 60vh;
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+}
+
+.history-row {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(7, 13, 34, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 4px;
+}
+
+.history-row strong {
+  color: var(--text);
+}
+
+.history-row small {
+  color: var(--muted);
+}
+
+.history-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  background: rgba(3, 6, 16, 0.72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.history-modal.open {
+  display: flex;
+}
+
+.history-modal-content {
+  width: min(100%, 860px);
+  padding: 20px;
+}
+
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -278,6 +332,7 @@ button:active {
 
 button[disabled] {
   opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .safe {

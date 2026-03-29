@@ -118,7 +118,35 @@
             </div>
           </div>
         </section>
+
+        <section class="history-card glass-card reveal" id="history-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Data History</p>
+              <h2>Previous Device Data</h2>
+            </div>
+            <p id="history-last-live">Waiting for first sync</p>
+          </div>
+          <p id="history-note">View the previous data when the system is on.</p>
+          <div class="button-row">
+            <button id="view-history-btn" type="button">View Previous Data</button>
+            <button id="download-history-btn" type="button" class="secondary">Download CSV</button>
+          </div>
+        </section>
       </main>
+
+      <div class="history-modal" id="history-modal" aria-hidden="true">
+        <div class="history-modal-content glass-card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">NeoGuard One</p>
+              <h2>Telemetry History</h2>
+            </div>
+            <button id="history-close-btn" type="button" class="secondary">Close</button>
+          </div>
+          <div class="history-list" id="history-list"></div>
+        </div>
+      </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
