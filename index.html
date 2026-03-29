@@ -3,17 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeoGuard Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./style.css" />
+    <title>NeoGuard</title>
+    <script>
+      window.location.href = './auth.html';
+    </script>
   </head>
   <body>
-    <div class="app-shell">
+    <p>Redirecting to login...</p>
+  </body>
+</html>
       <header class="app-header glass-card reveal">
         <div>
           <p class="eyebrow">Smart Neonatal Monitoring Cloth System</p>
@@ -21,16 +19,39 @@
         </div>
         <div class="device-connect-panel">
           <label class="device-input-group" for="device-id-input">
-            <span>Active Device</span>
-            <input id="device-id-input" type="text" placeholder="neoguard-one" readonly />
+            <span>ESP32 Device ID</span>
+            <input id="device-id-input" type="text" placeholder="esp32-001" />
           </label>
-          <button id="logout-btn" type="button">Sign Out</button>
+          <button id="set-device-id" type="button">Set Device</button>
           <div class="device-pill">
-            <span>User Account</span>
-            <strong id="user-email">--</strong>
+            <span>Active Cloud Device</span>
+            <strong id="device-id">Not selected</strong>
           </div>
         </div>
       </header>
+
+      <section class="auth-card glass-card reveal">
+        <div>
+          <p class="eyebrow">Authentication</p>
+          <h2>Firebase Sign-In</h2>
+          <p id="auth-status">Not signed in</p>
+        </div>
+        <div class="auth-controls">
+          <label class="device-input-group" for="auth-email">
+            <span>Email</span>
+            <input id="auth-email" type="email" placeholder="nurse@example.com" />
+          </label>
+          <label class="device-input-group" for="auth-password">
+            <span>Password</span>
+            <input id="auth-password" type="password" placeholder="At least 6 characters" />
+          </label>
+          <div class="button-row">
+            <button id="sign-in" type="button">Sign In</button>
+            <button id="sign-up" type="button" class="secondary">Sign Up</button>
+            <button id="sign-out" type="button" class="secondary">Sign Out</button>
+          </div>
+        </div>
+      </section>
 
       <main class="dashboard-grid">
         <section class="hero-card glass-card reveal">
@@ -123,7 +144,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-    <script src="./firebase-config.js"></script>
-    <script src="./app.js"></script>
+    <script src="./web/firebase-config.js"></script>
+    <script src="./web/app.js"></script>
   </body>
 </html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NeoGuard Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        height: 100%;
+        font-family: 'Sora', sans-serif;
+        color: #f6f7ff;
+      }
+
+      body {
+        background: linear-gradient(135deg, #0b1020 0%, #071326 100%);
+        display: flex;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: rgba(17, 25, 55, 0.5);
+        backdrop-filter: blur(8px);
+        border-right: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 24px;
+        overflow-y: auto;
+      }
+
+      .sidebar h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        margin: 0 0 32px;
+        letter-spacing: -0.04em;
+      }
+
+      .nav-items {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .nav-item {
+        margin-bottom: 8px;
+      }
+
+      .nav-btn {
+        width: 100%;
+        padding: 12px 14px;
+        background: none;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        color: #bac4ff;
+        cursor: pointer;
+        text-align: left;
+        transition: all 200ms;
+      }
+
+      .nav-btn:hover {
+        background: rgba(34, 199, 255, 0.1);
+        color: #22c7ff;
+      }
+
+      .nav-btn.active {
+        background: rgba(34, 199, 255, 0.2);
+        border-color: #22c7ff;
+        color: #22c7ff;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 32px;
+        overflow-y: auto;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+
+      .header h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        margin: 0;
+      }
+
+      .btn-logout {
+        padding: 10px 16px;
+        background: rgba(255, 107, 145, 0.2);
+        border: 1px solid #ff6b91;
+        border-radius: 8px;
+        color: #ff6b91;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 200ms;
+      }
+
+      .btn-logout:hover {
+        background: rgba(255, 107, 145, 0.3);
+      }
+
+      .section {
+        display: none;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      .card {
+        background: rgba(17, 25, 55, 0.68);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .user-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .user-info {
+        display: grid;
+        gap: 4px;
+      }
+
+      .user-name {
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+      .user-email {
+        color: #bac4ff;
+        font-size: 0.85rem;
+      }
+
+      .user-status {
+        color: #22c7ff;
+        font-size: 0.75rem;
+      }
+
+      .user-status.pending {
+        color: #ffd36a;
+      }
+
+      .user-status.rejected {
+        color: #ff6b91;
+      }
+
+      .user-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.8rem;
+        transition: all 200ms;
+      }
+
+      .btn-approve {
+        background: rgba(111, 255, 176, 0.2);
+        color: #6fffb0;
+        border: 1px solid rgba(111, 255, 176, 0.3);
+      }
+
+      .btn-approve:hover {
+        background: rgba(111, 255, 176, 0.3);
+      }
+
+      .btn-reject {
+        background: rgba(255, 107, 145, 0.2);
+        color: #ff6b91;
+        border: 1px solid rgba(255, 107, 145, 0.3);
+      }
+
+      .btn-reject:hover {
+        background: rgba(255, 107, 145, 0.3);
+      }
+
+      .btn-reset {
+        background: rgba(34, 199, 255, 0.2);
+        color: #22c7ff;
+        border: 1px solid rgba(34, 199, 255, 0.3);
+      }
+
+      .btn-reset:hover {
+        background: rgba(34, 199, 255, 0.3);
+      }
+
+      .logs-container {
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .log-entry {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: rgba(5, 10, 30, 0.3);
+        border-left: 3px solid #22c7ff;
+        border-radius: 4px;
+        font-size: 0.85rem;
+      }
+
+      .log-time {
+        color: #bac4ff;
+        font-size: 0.75rem;
+      }
+
+      .btn-download {
+        background: linear-gradient(135deg, #7b7dff, #22c7ff);
+        color: #f6f7ff;
+        padding: 10px 16px;
+        box-shadow: 0 16px 30px rgba(34, 199, 255, 0.18);
+      }
+
+      .btn-download:hover {
+        transform: translateY(-2px);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      th {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        color: #bac4ff;
+        font-weight: 600;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .status-pending {
+        color: #ffd36a;
+      }
+
+      .status-approved {
+        color: #6fffb0;
+      }
+
+      .status-rejected {
+        color: #ff6b91;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #bac4ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h1>Admin</h1>
+      <ul class="nav-items">
+        <li class="nav-item">
+          <button class="nav-btn active" onclick="showSection('pending-users')">
+            Pending Approvals
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-btn" onclick="showSection('user-management')">
+            User Management
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-btn" onclick="showSection('device-logs')">
+            Device Logs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-btn" onclick="showSection('settings')">
+            Settings
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h2 id="section-title">Pending User Approvals</h2>
+        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+      </div>
+
+      <!-- Pending Approvals Section -->
+      <div id="pending-users" class="section active">
+        <div id="pending-users-list"></div>
+      </div>
+
+      <!-- User Management Section -->
+      <div id="user-management" class="section">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Device Logs Section -->
+      <div id="device-logs" class="section">
+        <button class="btn-download" onclick="downloadLogs()">Download Logs</button>
+        <div class="logs-container" id="logs-container"></div>
+      </div>
+
+      <!-- Settings Section -->
+      <div id="settings" class="section">
+        <div class="card">
+          <h3>System Settings</h3>
+          <p>Device Name: <strong>neoguard-one</strong></p>
+          <p>Device ID: <strong>neoguard-one</strong></p>
+          <p>Database Region: <strong>asia-southeast1</strong></p>
+        </div>
+        <div class="card">
+          <h3>Authentication Settings</h3>
+          <p>Email verification required: <strong>Yes</strong></p>
+          <p>Admin approval required: <strong>Yes</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+    <script src="./web/firebase-config.js"></script>
+    <script src="./admin/admin.js"></script>
+  </body>
+</html>

@@ -27,7 +27,7 @@ body {
   font-family: 'Sora', sans-serif;
   color: var(--text);
   background-color: #0b1020;
-  background-image: url('/public/bg.jpeg');
+  background-image: url('/Public/bg.jpeg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -59,10 +59,6 @@ select {
   z-index: 0;
 }
 
-#hero-canvas {
-  display: none;
-}
-
 .dashboard-grid {
   position: relative;
   z-index: 1;
@@ -82,11 +78,30 @@ select {
 }
 
 .app-header,
+.auth-card,
 .hero-card,
 .controls-card,
 .metric-card {
   position: relative;
   z-index: 1;
+}
+
+.auth-card {
+  width: min(100%, 1080px);
+  margin: 0 auto 16px;
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.auth-controls {
+  display: grid;
+  gap: 10px;
+}
+
+#auth-status {
+  margin: 8px 0 0;
+  color: var(--muted);
 }
 
 .app-header {
@@ -308,6 +323,11 @@ button[disabled] {
     align-items: center;
   }
 
+  .auth-card {
+    grid-template-columns: 0.9fr 1.1fr;
+    align-items: center;
+  }
+
   .metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -325,7 +345,7 @@ button[disabled] {
 
 @media (max-width: 767px) {
   body {
-    background-image: url('/public/new_muruga_phone_view.jpg');
+    background-image: url('/Public/new_muruga_phone_view.jpg');
     background-attachment: scroll;
     background-size: cover;
     background-position: center top;

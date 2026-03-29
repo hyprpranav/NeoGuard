@@ -1,13 +1,17 @@
+const DEVICE_ID = 'neoguard-one';
+
 const state = {
   latest: null,
-  connectedIp: '',
-  pollHandle: null,
+  user: null,
+  deviceId: DEVICE_ID,
+  telemetryRef: null,
+  statusRef: null,
 };
 
 const elements = {
-  connectButton: document.getElementById('connect-device'),
-  deviceIp: document.getElementById('device-ip'),
-  deviceIpInput: document.getElementById('device-ip-input'),
+  logoutButton: document.getElementById('logout-btn'),
+  deviceId: document.getElementById('device-id-input'),
+  userEmail: document.getElementById('user-email'),
   babyTemp: document.getElementById('baby-temp'),
   envTemp: document.getElementById('env-temp'),
   spo2: document.getElementById('spo2'),
@@ -16,23 +20,20 @@ const elements = {
   safetyCondition: document.getElementById('safety-condition'),
   heaterState: document.getElementById('heater-state'),
   relayState: document.getElementById('relay-state'),
+  wifiState: document.getElementById('wifi-state'),
+  cloudState: document.getElementById('cloud-state'),
   commandStatus: document.getElementById('command-status'),
   buttons: Array.from(document.querySelectorAll('button[data-target]')),
 };
 
-function normalizeDeviceIp(value) {
-  const trimmed = String(value || '').trim();
-
-  if (!trimmed) {
-    return '';
-  }
-
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed.replace(/\/+$/, '');
-  }
-
-  return `http://${trimmed.replace(/\/+$/, '')}`;
+if (!window.NEOGUARD_FIREBASE_CONFIG) {
+  elements.commandStatus.textContent = 'Missing firebase-config.js';
+  throw new Error('Missing window.NEOGUARD_FIREBASE_CONFIG');
 }
+
+firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
+const auth = firebase.auth();
+const database = firebase.database();
 
 function formatNumber(value, digits = 1, suffix = '') {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
@@ -62,9 +63,7 @@ function applySafetyClass(text) {
 
 function render(data) {
   state.latest = data;
-  state.connectedIp = data.deviceIp || state.connectedIp;
 
-  elements.deviceIp.textContent = data.deviceIp || 'Not connected';
   elements.babyTemp.textContent = formatNumber(data.babyTemp, 1, '°C');
   elements.envTemp.textContent = formatNumber(data.envTemp, 1, '°C');
   elements.spo2.textContent = formatNumber(data.spo2, 0, '%');
@@ -76,80 +75,85 @@ function render(data) {
   elements.heaterState.className = data.heaterOn ? 'safe' : 'warning';
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
   elements.relayState.className = data.safetyRelayOn ? 'safe' : 'danger';
+  elements.cloudState.textContent = 'SYNCED';
+  elements.cloudState.className = 'safe';
 }
 
-async function fetchLatest() {
-  const response = await fetch('/api/data');
-
-  if (!response.ok) {
-    throw new Error(`Dashboard fetch failed with ${response.status}`);
-  }
-
-  const data = await response.json();
-  render(data);
+function renderConnection(connectionStatus) {
+  const connected = Boolean(connectionStatus?.wifiConnected);
+  elements.wifiState.textContent = connected ? 'CONNECTED' : 'OFFLINE';
+  elements.wifiState.className = connected ? 'safe' : 'danger';
 }
 
-async function fetchHealth() {
-  const response = await fetch('/api/health');
-
-  if (!response.ok) {
-    throw new Error(`Health check failed with ${response.status}`);
-  }
-
-  return response.json();
+function activeDeviceRoot() {
+  return `devices/${state.deviceId}`;
 }
 
-async function connectDevice() {
-  const normalizedIp = normalizeDeviceIp(elements.deviceIpInput.value);
+function setDeviceId() {
+  // Device ID is now fixed as neoguard-one
+  elements.commandStatus.textContent = `Using device ${state.deviceId}`;
+  subscribeToDevice();
+}
 
-  if (!normalizedIp) {
-    elements.commandStatus.textContent = 'Enter the ESP32 IP address first';
-    return;
+function unsubscribeFromDevice() {
+  if (state.telemetryRef) {
+    state.telemetryRef.off();
+    state.telemetryRef = null;
   }
 
-  elements.commandStatus.textContent = `Connecting to ${normalizedIp}...`;
-  elements.connectButton.disabled = true;
+  if (state.statusRef) {
+    state.statusRef.off();
+    state.statusRef = null;
+  }
+}
 
-  try {
-    const response = await fetch('/api/device/connect', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ deviceIp: normalizedIp }),
-    });
-    const result = await response.json();
+function subscribeToDevice() {
+  unsubscribeFromDevice();
 
-    if (!response.ok || !result.ok) {
-      throw new Error(result.message || 'Unable to connect to ESP32.');
+  const root = activeDeviceRoot();
+  state.telemetryRef = database.ref(`${root}/telemetry/latest`);
+  state.statusRef = database.ref(`${root}/status/connection`);
+
+  state.telemetryRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      render(data);
     }
+  });
 
-    localStorage.setItem('neoguard-device-ip', normalizedIp);
-    render(result.data);
-    elements.commandStatus.textContent = 'ESP32 connected';
-  } catch (error) {
-    elements.commandStatus.textContent = error.message;
-  } finally {
-    elements.connectButton.disabled = false;
-  }
+  state.statusRef.on('value', (snapshot) => {
+    renderConnection(snapshot.val() || {});
+  });
+}
+
+function commandPayload(target, controlState) {
+  const heaterState = target === 'heater' ? controlState : state.latest?.heaterOn ? 'on' : 'off';
+  const uvState = target === 'uv' ? controlState : state.latest?.uvOn ? 'on' : 'off';
+
+  return {
+    requestId: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+    sourceUid: state.user?.uid || 'unknown',
+    heaterState,
+    uvState,
+    requestedAt: new Date().toISOString(),
+  };
 }
 
 async function sendCommand(target, controlState) {
+  if (!state.user) {
+    elements.commandStatus.textContent = 'Not authenticated.';
+    return;
+  }
+
   elements.commandStatus.textContent = `Sending ${target} ${controlState}...`;
   elements.buttons.forEach((button) => {
     button.disabled = true;
   });
 
   try {
-    const response = await fetch(`/api/control/${target}/${controlState}`);
-    const result = await response.json();
-
-    if (!response.ok || !result.ok) {
-      throw new Error(result.message || 'Control command failed.');
-    }
-
-    render(result.data);
-    elements.commandStatus.textContent = `${target.toUpperCase()} ${controlState.toUpperCase()} confirmed`;
+    const payload = commandPayload(target, controlState);
+    await database.ref(`${activeDeviceRoot()}/commands/manual`).set(payload);
+    elements.commandStatus.textContent = `${target.toUpperCase()} ${controlState.toUpperCase()} sent to cloud`;
   } catch (error) {
     elements.commandStatus.textContent = error.message;
   } finally {
@@ -160,16 +164,8 @@ async function sendCommand(target, controlState) {
 }
 
 function bindControls() {
-  elements.connectButton.addEventListener('click', () => {
-    connectDevice();
-  });
-
-  elements.deviceIpInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      connectDevice();
-    }
-  });
+  elements.deviceId.value = state.deviceId;
+  elements.logoutButton.addEventListener('click', handleLogout);
 
   elements.buttons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -178,42 +174,37 @@ function bindControls() {
   });
 }
 
-async function initializeDashboard() {
-  bindControls();
+function handleLogout() {
+  localStorage.removeItem('neoguard-auth');
+  localStorage.removeItem('neoguard-user');
+  auth.signOut().then(() => {
+    window.location.href = './auth.html';
+  });
+}
 
-  const rememberedIp = localStorage.getItem('neoguard-device-ip');
-  if (rememberedIp) {
-    elements.deviceIpInput.value = rememberedIp.replace(/^https?:\/\//, '');
-  }
+function observeAuth() {
+  auth.onAuthStateChanged((user) => {
+    state.user = user;
 
-  try {
-    const health = await fetchHealth();
-
-    if (health.latestDeviceIp && health.latestDeviceIp !== 'Not connected') {
-      state.connectedIp = health.latestDeviceIp;
-      elements.deviceIp.textContent = health.latestDeviceIp;
-      elements.deviceIpInput.value = health.latestDeviceIp.replace(/^https?:\/\//, '');
-    }
-
-    if (state.connectedIp) {
-      await fetchLatest();
-      elements.commandStatus.textContent = 'Live data connected';
-    } else {
-      elements.commandStatus.textContent = 'Enter ESP32 IP and press Connect';
-    }
-  } catch (error) {
-    elements.commandStatus.textContent = error.message;
-  }
-
-  state.pollHandle = window.setInterval(() => {
-    if (!state.connectedIp) {
+    if (!user) {
+      localStorage.removeItem('neoguard-auth');
+      localStorage.removeItem('neoguard-user');
+      unsubscribeFromDevice();
+      window.location.href = './auth.html';
       return;
     }
 
-    fetchLatest().catch((error) => {
-      elements.commandStatus.textContent = error.message;
-    });
-  }, 4000);
+    const userDataStr = localStorage.getItem('neoguard-user');
+    const userData = JSON.parse(userDataStr || '{}');
+    elements.userEmail.textContent = user.email;
+    elements.commandStatus.textContent = `Listening for device ${state.deviceId}`;
+    subscribeToDevice();
+  });
+}
+
+function initializeDashboard() {
+  bindControls();
+  observeAuth();
 }
 
 initializeDashboard();

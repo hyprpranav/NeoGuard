@@ -5,14 +5,27 @@
 #include <DallasTemperature.h>
 #include <DHT.h>
 #include <MAX30100_PulseOximeter.h>
+#include <Firebase_ESP_Client.h>
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
 
 const char* WIFI_SSID = "Oppo A77s";
 const char* WIFI_PASSWORD = "9080061674";
+
+const char* FIREBASE_API_KEY = "AIzaSyDFL5nYrKTnW6BmD1dKOTrtSsTu7pXBvIY";
+const char* FIREBASE_DATABASE_URL = "https://neoguard-88bdb-default-rtdb.asia-southeast1.firebasedatabase.app";
+const char* FIREBASE_USER_EMAIL = "harishspranav2006@gmail.com";
+const char* FIREBASE_USER_PASSWORD = "927624BEC066";
+const char* DEVICE_ID = "neoguard-one";
 
 const float BABY_TEMP_MIN = 36.5f;
 const float BABY_TEMP_MAX = 37.5f;
 const float OVERHEAT_LIMIT = 38.5f;
 const unsigned long SENSOR_INTERVAL_MS = 1000;
+const unsigned long CLOUD_PUSH_INTERVAL_MS = 3500;
+const unsigned long CLOUD_COMMAND_POLL_MS = 1200;
+const unsigned long CLOUD_STATUS_INTERVAL_MS = 5000;
+const unsigned long WIFI_RETRY_INTERVAL_MS = 10000;
 
 const int ONE_WIRE_BUS = 4;
 const int DHT_PIN = 14;
@@ -45,9 +58,23 @@ String safetyCondition = "Booting";
 
 unsigned long lastSensorRead = 0;
 unsigned long lastMax30100Report = 0;
+unsigned long lastCloudPush = 0;
+unsigned long lastCommandPoll = 0;
+unsigned long lastCloudStatus = 0;
+unsigned long lastWifiRetry = 0;
+String lastCommandRequestId = "";
+
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig firebaseConfig;
+bool firebaseReady = false;
 
 void onBeatDetected() {
   Serial.println("Beat detected");
+}
+
+String deviceRoot() {
+  return String("/devices/") + DEVICE_ID;
 }
 
 String currentIp() {
@@ -92,6 +119,11 @@ String buildJson() {
 
 void handleData() {
   server.send(200, "application/json", buildJson());
+}
+
+void printWifiCloudWarning() {
+  Serial.println("WiFi is not connected. Failed to push data to cloud.");
+  Serial.println("Connect locally to ESP32 using its IP once WiFi is restored.");
 }
 
 void handleHeaterOn() {
@@ -140,6 +172,187 @@ void connectWifi() {
   Serial.print("ESP32 IP Address: ");
   Serial.println(currentIp());
   Serial.println("Type this IP into the NeoGuard dashboard and press Connect.");
+}
+
+bool ensureWifiConnected() {
+  if (WiFi.status() == WL_CONNECTED) {
+    return true;
+  }
+
+  if (millis() - lastWifiRetry >= WIFI_RETRY_INTERVAL_MS) {
+    lastWifiRetry = millis();
+    printWifiCloudWarning();
+    WiFi.disconnect();
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  }
+
+  return false;
+}
+
+bool firebasePathSetJson(const String& path, FirebaseJson& json) {
+  if (!Firebase.RTDB.setJSON(&fbdo, path.c_str(), &json)) {
+    Serial.print("Firebase setJSON failed: ");
+    Serial.println(fbdo.errorReason());
+    return false;
+  }
+
+  return true;
+}
+
+void setupFirebase() {
+  firebaseConfig.api_key = FIREBASE_API_KEY;
+  firebaseConfig.database_url = FIREBASE_DATABASE_URL;
+  firebaseConfig.token_status_callback = tokenStatusCallback;
+
+  auth.user.email = FIREBASE_USER_EMAIL;
+  auth.user.password = FIREBASE_USER_PASSWORD;
+
+  Firebase.reconnectWiFi(true);
+  Firebase.begin(&firebaseConfig, &auth);
+}
+
+void publishConnectionStatus() {
+  if (!firebaseReady || !Firebase.ready()) {
+    return;
+  }
+
+  FirebaseJson status;
+  status.set("wifiConnected", WiFi.status() == WL_CONNECTED);
+  status.set("ip", currentIp());
+  status.set("rssi", WiFi.RSSI());
+  status.set("lastSeen", millis());
+  status.set("updatedAt", ".sv");
+  status.set("updatedAt/.sv", "timestamp");
+
+  firebasePathSetJson(deviceRoot() + "/status/connection", status);
+}
+
+void publishTelemetry() {
+  if (!firebaseReady || !Firebase.ready()) {
+    return;
+  }
+
+  FirebaseJson latest;
+  latest.set("deviceIp", String("http://") + currentIp());
+  latest.set("babyTemp", isnan(babyTemp) ? 0 : babyTemp);
+  latest.set("envTemp", isnan(envTemp) ? 0 : envTemp);
+  latest.set("spo2", isnan(spo2) ? 0 : spo2);
+  latest.set("heartRate", isnan(heartRate) ? 0 : heartRate);
+  latest.set("pulse", pulseValue);
+  latest.set("heaterOn", heaterOn);
+  latest.set("uvOn", uvOn);
+  latest.set("safetyRelayOn", safetyRelayOn);
+  latest.set("sensorFault", sensorFault);
+  latest.set("safetyCondition", safetyCondition);
+  latest.set("wifiConnected", WiFi.status() == WL_CONNECTED);
+  latest.set("updatedAt", ".sv");
+  latest.set("updatedAt/.sv", "timestamp");
+
+  firebasePathSetJson(deviceRoot() + "/telemetry/latest", latest);
+
+  FirebaseJson history;
+  history.set("babyTemp", isnan(babyTemp) ? 0 : babyTemp);
+  history.set("envTemp", isnan(envTemp) ? 0 : envTemp);
+  history.set("spo2", isnan(spo2) ? 0 : spo2);
+  history.set("heartRate", isnan(heartRate) ? 0 : heartRate);
+  history.set("pulse", pulseValue);
+  history.set("heaterOn", heaterOn);
+  history.set("uvOn", uvOn);
+  history.set("safetyRelayOn", safetyRelayOn);
+  history.set("sensorFault", sensorFault);
+  history.set("safetyCondition", safetyCondition);
+  history.set("createdAt", ".sv");
+  history.set("createdAt/.sv", "timestamp");
+
+  if (!Firebase.RTDB.pushJSON(&fbdo, (deviceRoot() + "/telemetry/history").c_str(), &history)) {
+    Serial.print("Firebase pushJSON failed: ");
+    Serial.println(fbdo.errorReason());
+  }
+}
+
+bool parseSwitchState(const String& rawValue, bool currentValue, bool* hasValue) {
+  String v = rawValue;
+  v.trim();
+  v.toLowerCase();
+
+  if (v == "on") {
+    *hasValue = true;
+    return true;
+  }
+
+  if (v == "off") {
+    *hasValue = true;
+    return false;
+  }
+
+  *hasValue = false;
+  return currentValue;
+}
+
+void acknowledgeCommand(const String& requestId) {
+  FirebaseJson ack;
+  ack.set("requestId", requestId);
+  ack.set("heaterOn", heaterOn);
+  ack.set("uvOn", uvOn);
+  ack.set("safetyRelayOn", safetyRelayOn);
+  ack.set("processedAt", ".sv");
+  ack.set("processedAt/.sv", "timestamp");
+  firebasePathSetJson(deviceRoot() + "/commands/ack", ack);
+}
+
+void consumeCloudCommands() {
+  if (!firebaseReady || !Firebase.ready()) {
+    return;
+  }
+
+  const String commandPath = deviceRoot() + "/commands/manual";
+  if (!Firebase.RTDB.getJSON(&fbdo, commandPath.c_str())) {
+    return;
+  }
+
+  FirebaseJsonData jsonData;
+  FirebaseJson& commandJson = fbdo.jsonObject();
+
+  String requestId = "";
+  String heaterStateRaw = "";
+  String uvStateRaw = "";
+
+  if (commandJson.get(jsonData, "requestId") && jsonData.success) {
+    requestId = jsonData.stringValue;
+  }
+
+  if (requestId.length() == 0 || requestId == lastCommandRequestId) {
+    return;
+  }
+
+  if (commandJson.get(jsonData, "heaterState") && jsonData.success) {
+    heaterStateRaw = jsonData.stringValue;
+  }
+
+  if (commandJson.get(jsonData, "uvState") && jsonData.success) {
+    uvStateRaw = jsonData.stringValue;
+  }
+
+  bool hasHeater = false;
+  bool hasUv = false;
+
+  bool nextHeater = parseSwitchState(heaterStateRaw, heaterOn, &hasHeater);
+  bool nextUv = parseSwitchState(uvStateRaw, uvOn, &hasUv);
+
+  if (hasHeater) {
+    manualHeaterOverride = true;
+    manualHeaterState = nextHeater;
+  }
+
+  if (hasUv) {
+    setUv(nextUv);
+  }
+
+  updateControlLogic();
+  lastCommandRequestId = requestId;
+  acknowledgeCommand(requestId);
+  Serial.print("Processed cloud command requestId=");
+  Serial.println(requestId);
 }
 
 void readSensors() {
@@ -251,6 +464,7 @@ void setup() {
   }
 
   connectWifi();
+  setupFirebase();
   setupRoutes();
 }
 
@@ -263,5 +477,26 @@ void loop() {
   if (millis() - lastSensorRead >= SENSOR_INTERVAL_MS) {
     lastSensorRead = millis();
     readSensors();
+  }
+
+  if (!ensureWifiConnected()) {
+    return;
+  }
+
+  firebaseReady = Firebase.ready();
+
+  if (firebaseReady && millis() - lastCloudStatus >= CLOUD_STATUS_INTERVAL_MS) {
+    lastCloudStatus = millis();
+    publishConnectionStatus();
+  }
+
+  if (firebaseReady && millis() - lastCloudPush >= CLOUD_PUSH_INTERVAL_MS) {
+    lastCloudPush = millis();
+    publishTelemetry();
+  }
+
+  if (firebaseReady && millis() - lastCommandPoll >= CLOUD_COMMAND_POLL_MS) {
+    lastCommandPoll = millis();
+    consumeCloudCommands();
   }
 }

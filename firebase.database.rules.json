@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "devices": {
+      "$deviceId": {
+        "telemetry": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('deviceOwners').child($deviceId).child('uid').val() === auth.uid"
+        },
+        "status": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('deviceOwners').child($deviceId).child('uid').val() === auth.uid"
+        },
+        "commands": {
+          ".read": "auth != null",
+          "manual": {
+            ".write": "auth != null"
+          },
+          "ack": {
+            ".write": "auth != null && root.child('deviceOwners').child($deviceId).child('uid').val() === auth.uid"
+          }
+        }
+      }
+    },
+    "deviceOwners": {
+      "$deviceId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
