@@ -8,6 +8,7 @@ const auth = firebase.auth();
 const database = firebase.database();
 const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
 const PENDING_REQUEST_KEY = 'neoguard-pending-request-email';
+const VERIFY_SENT_KEY = 'neoguard-verify-email-sent';
 
 const signupState = {
   accountCreated: false,
@@ -63,6 +64,36 @@ function setSignupBusy(isBusy, verifyLabel = 'Verify Email', requestLabel = 'Req
   requestBtn.disabled = isBusy;
   verifyBtn.textContent = verifyLabel;
   requestBtn.textContent = requestLabel;
+}
+
+function showRequestAccessOnly() {
+  const verifyBtn = document.getElementById('signup-btn');
+  const requestBtn = document.getElementById('request-access-btn');
+
+  if (verifyBtn) {
+    verifyBtn.style.display = 'none';
+  }
+
+  if (requestBtn) {
+    requestBtn.style.display = 'block';
+    requestBtn.classList.remove('btn-secondary');
+    requestBtn.classList.add('btn-primary');
+  }
+}
+
+function showVerifyOnly() {
+  const verifyBtn = document.getElementById('signup-btn');
+  const requestBtn = document.getElementById('request-access-btn');
+
+  if (verifyBtn) {
+    verifyBtn.style.display = 'block';
+  }
+
+  if (requestBtn) {
+    requestBtn.style.display = 'none';
+    requestBtn.classList.remove('btn-primary');
+    requestBtn.classList.add('btn-secondary');
+  }
 }
 
 function clearErrors(prefix) {
@@ -190,13 +221,16 @@ async function handleSignUp() {
 
     await user.sendEmailVerification();
     signupState.accountCreated = true;
+    localStorage.setItem(VERIFY_SENT_KEY, email.toLowerCase());
 
-    document.getElementById('request-access-btn').style.display = 'block';
+    showRequestAccessOnly();
     showStatus('signup', 'IMPORTANT: Please verify your email from INBOX/SPAM/JUNK, then click REQUEST ACCESS below.', 'warning');
     setWaitingNote('Waiting for your email verification. After verifying mail, click Request Access.');
   } catch (error) {
     console.error(error);
-    if (error.code === 'auth/email-already-in-use') {
+    if (error.code === 'auth/invalid-email') {
+      showStatus('signup', 'Your email is invalid. Verification message was not sent.', 'error');
+    } else if (error.code === 'auth/email-already-in-use') {
       showStatus('signup', 'Email already registered. Sign in first, verify email, then request access.', 'error');
     } else {
       showStatus('signup', error.message, 'error');
@@ -251,6 +285,7 @@ async function handleRequestAccess() {
 
     signupState.accountCreated = false;
     localStorage.setItem(PENDING_REQUEST_KEY, email);
+    localStorage.removeItem(VERIFY_SENT_KEY);
     showStatus('signup', 'Request submitted successfully. Admin will now see your account in pending approvals.', 'success');
     setWaitingNote('Request submitted to admin. Please wait for approval before signing in.');
 
@@ -290,11 +325,14 @@ async function handleForgotPassword() {
 
 auth.onAuthStateChanged((user) => {
   if (!localStorage.getItem('neoguard-auth')) {
-    const requestBtn = document.getElementById('request-access-btn');
     const pendingEmail = localStorage.getItem(PENDING_REQUEST_KEY);
+    const verifySentEmail = localStorage.getItem(VERIFY_SENT_KEY);
 
-    if (requestBtn) {
-      requestBtn.style.display = user ? 'block' : 'none';
+    if (verifySentEmail) {
+      showRequestAccessOnly();
+      setWaitingNote(`Verification mail was sent to ${verifySentEmail}. Please verify and then click Request Access.`);
+    } else {
+      showVerifyOnly();
     }
 
     if (pendingEmail) {
