@@ -27,7 +27,7 @@ body {
   font-family: 'Sora', sans-serif;
   color: var(--text);
   background-color: #0b1020;
-  background-image: url('/Public/bg.jpeg');
+  background-image: url('/bg.jpeg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
@@ -345,7 +345,7 @@ button[disabled] {
 
 @media (max-width: 767px) {
   body {
-    background-image: url('/Public/new_muruga_phone_view.jpg');
+    background-image: url('/mobile-bg.jpg');
     background-attachment: scroll;
     background-size: cover;
     background-position: center top;
