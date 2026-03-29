@@ -7,6 +7,8 @@ const state = {
   connection: null,
   isLive: false,
   historyRows: [],
+  lastTelemetryEventAt: 0,
+  lastConnectionEventAt: 0,
   telemetryRef: null,
   statusRef: null,
 };
@@ -131,7 +133,9 @@ function isDeviceLive() {
   const wifiConnected = Boolean(state.connection?.wifiConnected);
   const connectionFresh = isFreshTimestamp(state.connection?.updatedAt, LIVE_TIMEOUT_MS);
   const telemetryFresh = isFreshTimestamp(state.latest?.updatedAt, LIVE_TIMEOUT_MS);
-  return wifiConnected && (connectionFresh || telemetryFresh);
+  const realtimeEventFresh = (Date.now() - state.lastTelemetryEventAt <= LIVE_TIMEOUT_MS)
+    || (Date.now() - state.lastConnectionEventAt <= LIVE_TIMEOUT_MS);
+  return wifiConnected && (connectionFresh || telemetryFresh || realtimeEventFresh);
 }
 
 function applyLiveState() {
@@ -186,11 +190,13 @@ function subscribeToDevice() {
   state.telemetryRef.on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
+      state.lastTelemetryEventAt = Date.now();
       render(data);
     }
   });
 
   state.statusRef.on('value', (snapshot) => {
+    state.lastConnectionEventAt = Date.now();
     renderConnection(snapshot.val() || {});
   });
 }

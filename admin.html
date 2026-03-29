@@ -336,12 +336,27 @@
       .metric-card strong {
         display: block;
         margin-top: 8px;
-        font-size: 1.2rem;
+        font-size: 1.05rem;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
 
       .hint {
         color: #bac4ff;
         font-size: 0.82rem;
+      }
+
+      .status-safe {
+        color: #6fffb0;
+      }
+
+      .status-warning {
+        color: #ffd36a;
+      }
+
+      .status-danger {
+        color: #ff6b91;
       }
     </style>
   </head>
@@ -424,12 +439,16 @@
           </div>
 
           <div class="device-grid">
+            <div class="metric-card"><span>Safety Condition</span><strong id="admin-safety-condition">Awaiting data</strong></div>
             <div class="metric-card"><span>Baby Temp</span><strong id="admin-baby-temp">--.-°C</strong></div>
             <div class="metric-card"><span>Env Temp</span><strong id="admin-env-temp">--.-°C</strong></div>
             <div class="metric-card"><span>SpO2</span><strong id="admin-spo2">--%</strong></div>
             <div class="metric-card"><span>Heart Rate</span><strong id="admin-heart-rate">-- bpm</strong></div>
             <div class="metric-card"><span>Pulse</span><strong id="admin-pulse">-- bpm</strong></div>
+            <div class="metric-card"><span>Safety Relay</span><strong id="admin-safety-relay">OFF</strong></div>
             <div class="metric-card"><span>Wi-Fi</span><strong id="admin-wifi">UNKNOWN</strong></div>
+            <div class="metric-card"><span>Cloud Sync</span><strong id="admin-cloud-sync">WAITING</strong></div>
+            <div class="metric-card"><span>Last Updated</span><strong id="admin-last-updated">--</strong></div>
             <div class="metric-card"><span>Heater</span><strong id="admin-heater">OFF</strong></div>
             <div class="metric-card"><span>UV</span><strong id="admin-uv">OFF</strong></div>
           </div>

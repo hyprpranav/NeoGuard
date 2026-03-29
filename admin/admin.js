@@ -11,6 +11,11 @@ const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
 let currentUser = null;
 let adminTelemetryRef = null;
 let adminStatusRef = null;
+let adminLatestTelemetry = null;
+let adminLatestConnection = null;
+let adminLastTelemetryEventAt = 0;
+let adminLastConnectionEventAt = 0;
+const ADMIN_LIVE_TIMEOUT_MS = 15000;
 
 const adminElements = {
   deviceSelect: document.getElementById('admin-device-select'),
@@ -20,7 +25,11 @@ const adminElements = {
   spo2: document.getElementById('admin-spo2'),
   heartRate: document.getElementById('admin-heart-rate'),
   pulse: document.getElementById('admin-pulse'),
+  safetyCondition: document.getElementById('admin-safety-condition'),
+  safetyRelay: document.getElementById('admin-safety-relay'),
   wifi: document.getElementById('admin-wifi'),
+  cloudSync: document.getElementById('admin-cloud-sync'),
+  lastUpdated: document.getElementById('admin-last-updated'),
   heater: document.getElementById('admin-heater'),
   uv: document.getElementById('admin-uv')
 };
@@ -129,7 +138,54 @@ function formatMetric(value, suffix = '') {
   return `${Number(value)}${suffix}`;
 }
 
+function formatTimestamp(value) {
+  const n = Number(value);
+  if (!Number.isNaN(n)) {
+    return new Date(n).toLocaleString();
+  }
+  if (value) {
+    return new Date(value).toLocaleString();
+  }
+  return '--';
+}
+
+function applySafetyClass(el, text) {
+  el.classList.remove('status-safe', 'status-warning', 'status-danger');
+  const normalized = (text || '').toLowerCase();
+  if (normalized.includes('critical') || normalized.includes('fault') || normalized.includes('overheat')) {
+    el.classList.add('status-danger');
+    return;
+  }
+  if (normalized.includes('stable') || normalized.includes('normal')) {
+    el.classList.add('status-safe');
+    return;
+  }
+  el.classList.add('status-warning');
+}
+
+function isFresh(value, timeoutMs) {
+  const n = Number(value);
+  if (Number.isNaN(n)) {
+    return false;
+  }
+  return Date.now() - n <= timeoutMs;
+}
+
+function refreshAdminCloudState() {
+  const wifiConnected = Boolean(adminLatestConnection?.wifiConnected);
+  const statusFresh = isFresh(adminLatestConnection?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
+  const telemetryFresh = isFresh(adminLatestTelemetry?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
+  const eventFresh = (Date.now() - adminLastTelemetryEventAt <= ADMIN_LIVE_TIMEOUT_MS)
+    || (Date.now() - adminLastConnectionEventAt <= ADMIN_LIVE_TIMEOUT_MS);
+  const live = wifiConnected && (statusFresh || telemetryFresh || eventFresh);
+
+  adminElements.cloudSync.textContent = live ? 'LIVE' : 'DISCONNECTED';
+  adminElements.cloudSync.classList.remove('status-safe', 'status-danger');
+  adminElements.cloudSync.classList.add(live ? 'status-safe' : 'status-danger');
+}
+
 function renderAdminDevice(data) {
+  adminLatestTelemetry = data || {};
   adminElements.babyTemp.textContent = formatMetric(data.babyTemp, '°C');
   adminElements.envTemp.textContent = formatMetric(data.envTemp, '°C');
   adminElements.spo2.textContent = formatMetric(data.spo2, '%');
@@ -137,10 +193,20 @@ function renderAdminDevice(data) {
   adminElements.pulse.textContent = formatMetric(data.pulse, ' bpm');
   adminElements.heater.textContent = data.heaterOn ? 'ON' : 'OFF';
   adminElements.uv.textContent = data.uvOn ? 'ON' : 'OFF';
+  adminElements.safetyRelay.textContent = data.safetyRelayOn ? 'ARMED' : 'OFF';
+  adminElements.safetyCondition.textContent = data.safetyCondition || 'Monitoring';
+  applySafetyClass(adminElements.safetyCondition, data.safetyCondition || 'Monitoring');
+  adminElements.lastUpdated.textContent = formatTimestamp(data.updatedAt || data.createdAt);
+  refreshAdminCloudState();
 }
 
 function renderAdminConnection(status) {
-  adminElements.wifi.textContent = status?.wifiConnected ? 'CONNECTED' : 'OFFLINE';
+  adminLatestConnection = status || {};
+  const connected = status?.wifiConnected;
+  adminElements.wifi.textContent = connected ? 'CONNECTED' : 'OFFLINE';
+  adminElements.wifi.classList.remove('status-safe', 'status-danger');
+  adminElements.wifi.classList.add(connected ? 'status-safe' : 'status-danger');
+  refreshAdminCloudState();
 }
 
 function clearAdminSubscriptions() {
@@ -156,12 +222,20 @@ function clearAdminSubscriptions() {
 
 function subscribeAdminToDevice(deviceId) {
   clearAdminSubscriptions();
+  adminLatestTelemetry = null;
+  adminLatestConnection = null;
+  adminLastTelemetryEventAt = 0;
+  adminLastConnectionEventAt = 0;
 
   if (deviceId !== 'neoguard-one') {
     const demo = demoDevices[deviceId];
     renderAdminDevice(demo);
     renderAdminConnection({ wifiConnected: false });
     adminElements.status.textContent = `${deviceId} is a demo source.`;
+    adminElements.cloudSync.textContent = 'DEMO';
+    adminElements.cloudSync.classList.remove('status-danger', 'status-safe');
+    adminElements.cloudSync.classList.add('status-warning');
+    adminElements.lastUpdated.textContent = '--';
     return;
   }
 
@@ -170,11 +244,13 @@ function subscribeAdminToDevice(deviceId) {
   adminStatusRef = database.ref(`devices/${deviceId}/status/connection`);
 
   adminTelemetryRef.on('value', (snapshot) => {
+    adminLastTelemetryEventAt = Date.now();
     const data = snapshot.val() || {};
     renderAdminDevice(data);
   });
 
   adminStatusRef.on('value', (snapshot) => {
+    adminLastConnectionEventAt = Date.now();
     renderAdminConnection(snapshot.val() || {});
   });
 }

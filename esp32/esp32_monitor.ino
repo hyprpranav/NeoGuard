@@ -220,8 +220,10 @@ void publishConnectionStatus() {
   status.set("wifiConnected", WiFi.status() == WL_CONNECTED);
   status.set("ip", currentIp());
   status.set("rssi", WiFi.RSSI());
-  status.set("lastSeen", millis());
-  status.set("updatedAt", ".sv");
+  status.set("systemLive", true);
+  status.set("uptimeMs", (int) millis());
+  status.set("lastSeen", ".sv");
+  status.set("lastSeen/.sv", "timestamp");
   status.set("updatedAt/.sv", "timestamp");
 
   firebasePathSetJson(deviceRoot() + "/status/connection", status);
@@ -245,7 +247,8 @@ void publishTelemetry() {
   latest.set("sensorFault", sensorFault);
   latest.set("safetyCondition", safetyCondition);
   latest.set("wifiConnected", WiFi.status() == WL_CONNECTED);
-  latest.set("updatedAt", ".sv");
+  latest.set("systemLive", true);
+  latest.set("uptimeMs", (int) millis());
   latest.set("updatedAt/.sv", "timestamp");
 
   firebasePathSetJson(deviceRoot() + "/telemetry/latest", latest);
@@ -261,7 +264,8 @@ void publishTelemetry() {
   history.set("safetyRelayOn", safetyRelayOn);
   history.set("sensorFault", sensorFault);
   history.set("safetyCondition", safetyCondition);
-  history.set("createdAt", ".sv");
+  history.set("systemLive", true);
+  history.set("uptimeMs", (int) millis());
   history.set("createdAt/.sv", "timestamp");
 
   if (!Firebase.RTDB.pushJSON(&fbdo, (deviceRoot() + "/telemetry/history").c_str(), &history)) {
@@ -295,7 +299,7 @@ void acknowledgeCommand(const String& requestId) {
   ack.set("heaterOn", heaterOn);
   ack.set("uvOn", uvOn);
   ack.set("safetyRelayOn", safetyRelayOn);
-  ack.set("processedAt", ".sv");
+  ack.set("systemLive", true);
   ack.set("processedAt/.sv", "timestamp");
   firebasePathSetJson(deviceRoot() + "/commands/ack", ack);
 }
