@@ -6,6 +6,11 @@ if (!window.NEOGUARD_FIREBASE_CONFIG) {
 firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
 const auth = firebase.auth();
 const database = firebase.database();
+const BOOTSTRAP_ADMIN_EMAILS = ['suruthi@gmail.com'];
+
+function isBootstrapAdmin(email) {
+  return BOOTSTRAP_ADMIN_EMAILS.includes((email || '').toLowerCase());
+}
 
 function switchTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(tab => {
@@ -55,6 +60,30 @@ async function handleSignIn() {
       showStatus('signin', 'Please verify your email first. Check your mail inbox.', 'error');
       document.getElementById('signin-btn').disabled = false;
       await auth.signOut();
+      return;
+    }
+
+    if (isBootstrapAdmin(user.email)) {
+      try {
+        await database.ref(`users/${user.uid}`).update({
+          name: user.displayName || 'System Admin',
+          email: user.email,
+          role: 'admin',
+          status: 'approved',
+          emailVerified: true,
+          updatedAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.log('Bootstrap admin profile update skipped:', e.message);
+      }
+
+      localStorage.setItem('neoguard-auth', 'true');
+      localStorage.setItem('neoguard-user', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        role: 'admin'
+      }));
+      window.location.href = './admin.html';
       return;
     }
 
