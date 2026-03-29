@@ -8,11 +8,15 @@ const auth = firebase.auth();
 const database = firebase.database();
 const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
 
+const signupState = {
+  accountCreated: false,
+};
+
 function isBootstrapAdmin(email) {
   return BOOTSTRAP_ADMIN_EMAILS.includes((email || '').toLowerCase());
 }
 
-function switchTab(tabName) {
+function switchTab(tabName, clickedButton) {
   document.querySelectorAll('.tab-content').forEach(tab => {
     tab.classList.remove('active');
   });
@@ -21,14 +25,19 @@ function switchTab(tabName) {
   });
 
   document.getElementById(tabName + '-tab').classList.add('active');
-  event.target.classList.add('active');
+  const targetBtn = clickedButton || document.getElementById(`${tabName}-tab-btn`);
+  if (targetBtn) {
+    targetBtn.classList.add('active');
+  }
 }
 
 function showStatus(tabName, message, type) {
   const statusEl = document.getElementById(tabName + '-status');
   statusEl.textContent = message;
   statusEl.className = `status-message show ${type}`;
-  setTimeout(() => statusEl.classList.remove('show'), 4000);
+  if (type !== 'warning') {
+    setTimeout(() => statusEl.classList.remove('show'), 5000);
+  }
 }
 
 function clearErrors(prefix) {
@@ -145,40 +154,83 @@ async function handleSignUp() {
   }
 
   document.getElementById('signup-btn').disabled = true;
-  showStatus('signup', 'Creating account...', 'info');
+  showStatus('signup', 'Creating account and sending verification mail...', 'info');
 
   try {
-    const result = await auth.createUserWithEmailAndPassword(email, password);
-    const user = result.user;
+    let user = auth.currentUser;
+    if (!user || user.email !== email) {
+      const result = await auth.createUserWithEmailAndPassword(email, password);
+      user = result.user;
+    }
 
     await user.sendEmailVerification();
+    signupState.accountCreated = true;
 
-    const userRef = database.ref(`users/${user.uid}`);
-    await userRef.set({
-      name: name,
-      email: email,
+    document.getElementById('request-access-btn').style.display = 'block';
+    showStatus('signup', 'IMPORTANT: Please verify your email from INBOX/SPAM/JUNK, then click REQUEST ACCESS below.', 'warning');
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'auth/email-already-in-use') {
+      showStatus('signup', 'Email already registered. Sign in first, verify email, then request access.', 'error');
+    } else {
+      showStatus('signup', error.message, 'error');
+    }
+  }
+
+  document.getElementById('signup-btn').disabled = false;
+}
+
+async function handleRequestAccess() {
+  clearErrors('signup');
+
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value.trim();
+
+  if (!name || !email || !password) {
+    showStatus('signup', 'Fill name, email, password first.', 'error');
+    return;
+  }
+
+  let user = auth.currentUser;
+
+  try {
+    if (!user || user.email !== email) {
+      const result = await auth.signInWithEmailAndPassword(email, password);
+      user = result.user;
+    }
+
+    await user.reload();
+
+    if (!user.emailVerified) {
+      showStatus('signup', 'You have not verified email yet. Please verify from inbox/spam/junk and then click REQUEST ACCESS.', 'warning');
+      return;
+    }
+
+    await database.ref(`users/${user.uid}`).set({
+      name,
+      email,
       status: 'pending',
       role: 'operator',
       createdAt: new Date().toISOString(),
-      emailVerified: false
+      emailVerified: true
     });
 
-    showStatus('signup', 'Account created! Check your email to verify. Admin will approve soon.', 'success');
-    
+    signupState.accountCreated = false;
+    showStatus('signup', 'Request submitted successfully. Admin will now see your account in pending approvals.', 'success');
+
+    await auth.signOut();
+
     setTimeout(() => {
       document.getElementById('signup-name').value = '';
       document.getElementById('signup-email').value = '';
       document.getElementById('signup-password').value = '';
+      document.getElementById('request-access-btn').style.display = 'none';
       switchTab('signin');
-    }, 3000);
+    }, 2500);
   } catch (error) {
     console.error(error);
-    if (error.code === 'auth/email-already-in-use') {
-      showStatus('signup', 'Email already registered', 'error');
-    } else {
-      showStatus('signup', error.message, 'error');
-    }
-    document.getElementById('signup-btn').disabled = false;
+    showStatus('signup', error.message || 'Unable to request access. Please try again.', 'error');
   }
 }
 
@@ -198,6 +250,13 @@ async function handleForgotPassword() {
 }
 
 auth.onAuthStateChanged((user) => {
+  if (!localStorage.getItem('neoguard-auth')) {
+    const requestBtn = document.getElementById('request-access-btn');
+    if (requestBtn) {
+      requestBtn.style.display = user ? 'block' : 'none';
+    }
+  }
+
   if (user && localStorage.getItem('neoguard-auth') === 'true') {
     const role = JSON.parse(localStorage.getItem('neoguard-user') || '{}').role;
     if (role === 'admin') {

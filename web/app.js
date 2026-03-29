@@ -11,6 +11,7 @@ const state = {
 const elements = {
   logoutButton: document.getElementById('logout-btn'),
   deviceId: document.getElementById('device-id-input'),
+  userName: document.getElementById('user-name'),
   userEmail: document.getElementById('user-email'),
   babyTemp: document.getElementById('baby-temp'),
   envTemp: document.getElementById('env-temp'),
@@ -178,8 +179,22 @@ function handleLogout() {
   localStorage.removeItem('neoguard-auth');
   localStorage.removeItem('neoguard-user');
   auth.signOut().then(() => {
-    window.location.href = './auth.html';
+    window.location.href = '../auth.html';
   });
+}
+
+async function loadUserProfile(user) {
+  elements.userEmail.textContent = user.email || '--';
+  elements.userName.textContent = 'Welcome';
+
+  try {
+    const snapshot = await database.ref(`users/${user.uid}`).once('value');
+    const profile = snapshot.val() || {};
+    const displayName = profile.name || 'NeoGuard User';
+    elements.userName.textContent = `Welcome, ${displayName}`;
+  } catch (error) {
+    console.log('Unable to load profile:', error.message);
+  }
 }
 
 function observeAuth() {
@@ -190,13 +205,13 @@ function observeAuth() {
       localStorage.removeItem('neoguard-auth');
       localStorage.removeItem('neoguard-user');
       unsubscribeFromDevice();
-      window.location.href = './auth.html';
+      window.location.href = '../auth.html';
       return;
     }
 
     const userDataStr = localStorage.getItem('neoguard-user');
     const userData = JSON.parse(userDataStr || '{}');
-    elements.userEmail.textContent = user.email;
+    loadUserProfile(user);
     elements.commandStatus.textContent = `Listening for device ${state.deviceId}`;
     subscribeToDevice();
   });

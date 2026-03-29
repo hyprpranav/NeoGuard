@@ -24,13 +24,21 @@
       body {
         background-image: url('/bg.jpeg');
         background-size: cover;
-        background-position: center;
+        background-position: center center;
         background-repeat: no-repeat;
         background-attachment: fixed;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #f6f7ff;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          background-image: url('/mobile-bg.jpg');
+          background-position: center top;
+          background-attachment: scroll;
+        }
       }
 
       body::before {
@@ -53,6 +61,7 @@
       .auth-card {
         background: rgba(17, 25, 55, 0.68);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 24px;
         padding: 40px 30px;
@@ -227,6 +236,13 @@
         border: 1px solid rgba(34, 199, 255, 0.3);
       }
 
+      .status-message.warning {
+        background: rgba(255, 107, 145, 0.2);
+        color: #ffd7e3;
+        border: 1px solid rgba(255, 107, 145, 0.45);
+        font-weight: 700;
+      }
+
       .checkbox-group {
         display: flex;
         gap: 8px;
@@ -237,6 +253,15 @@
       input[type="checkbox"] {
         width: auto;
         cursor: pointer;
+      }
+
+      .signup-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      #request-access-btn {
+        display: none;
       }
     </style>
   </head>
@@ -249,8 +274,8 @@
         </div>
 
         <div class="tab-switcher">
-          <button class="tab-btn active" onclick="switchTab('signin')">Sign In</button>
-          <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+          <button id="signin-tab-btn" class="tab-btn active" onclick="switchTab('signin', this)">Sign In</button>
+          <button id="signup-tab-btn" class="tab-btn" onclick="switchTab('signup', this)">Sign Up</button>
         </div>
 
         <!-- Sign In Tab -->
@@ -302,9 +327,12 @@
             <label for="signup-verify">I agree to receive a verification email</label>
           </div>
 
-          <button class="btn-primary" id="signup-btn" onclick="handleSignUp()">Request Account</button>
+          <div class="signup-actions">
+            <button class="btn-primary" id="signup-btn" onclick="handleSignUp()">Verify Email</button>
+            <button class="btn-secondary" id="request-access-btn" onclick="handleRequestAccess()">Request Access</button>
+          </div>
 
-          <div class="divider">Request will be reviewed by admin</div>
+          <div class="divider">Step 1: Verify email. Step 2: Request access for admin approval.</div>
         </div>
       </div>
     </div>

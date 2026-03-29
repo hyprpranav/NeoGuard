@@ -31,6 +31,7 @@
         width: 280px;
         background: rgba(17, 25, 55, 0.5);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border-right: 1px solid rgba(255, 255, 255, 0.12);
         padding: 24px;
         overflow-y: auto;
@@ -120,6 +121,7 @@
       .card {
         background: rgba(17, 25, 55, 0.68);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 20px;
         padding: 20px;
@@ -272,6 +274,51 @@
         padding: 40px;
         color: #bac4ff;
       }
+
+      .devices-toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .devices-toolbar select {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(5, 10, 30, 0.4);
+        color: #f6f7ff;
+      }
+
+      .device-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      }
+
+      .metric-card {
+        background: rgba(5, 10, 30, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .metric-card span {
+        display: block;
+        color: #bac4ff;
+        font-size: 0.8rem;
+      }
+
+      .metric-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.2rem;
+      }
+
+      .hint {
+        color: #bac4ff;
+        font-size: 0.82rem;
+      }
     </style>
   </head>
   <body>
@@ -291,6 +338,11 @@
         <li class="nav-item">
           <button class="nav-btn" onclick="showSection('device-logs')">
             Device Logs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-btn" onclick="showSection('devices')">
+            Devices
           </button>
         </li>
         <li class="nav-item">
@@ -332,6 +384,32 @@
       <div id="device-logs" class="section">
         <button class="btn-download" onclick="downloadLogs()">Download Logs</button>
         <div class="logs-container" id="logs-container"></div>
+      </div>
+
+      <!-- Devices Section -->
+      <div id="devices" class="section">
+        <div class="card">
+          <div class="devices-toolbar">
+            <label for="admin-device-select">Select Device:</label>
+            <select id="admin-device-select">
+              <option value="neoguard-one">neoguard-one (live)</option>
+              <option value="neoguard-two">neoguard-two (demo)</option>
+              <option value="neoguard-three">neoguard-three (demo)</option>
+            </select>
+            <span class="hint" id="admin-device-status">Waiting for selection...</span>
+          </div>
+
+          <div class="device-grid">
+            <div class="metric-card"><span>Baby Temp</span><strong id="admin-baby-temp">--.-°C</strong></div>
+            <div class="metric-card"><span>Env Temp</span><strong id="admin-env-temp">--.-°C</strong></div>
+            <div class="metric-card"><span>SpO2</span><strong id="admin-spo2">--%</strong></div>
+            <div class="metric-card"><span>Heart Rate</span><strong id="admin-heart-rate">-- bpm</strong></div>
+            <div class="metric-card"><span>Pulse</span><strong id="admin-pulse">-- bpm</strong></div>
+            <div class="metric-card"><span>Wi-Fi</span><strong id="admin-wifi">UNKNOWN</strong></div>
+            <div class="metric-card"><span>Heater</span><strong id="admin-heater">OFF</strong></div>
+            <div class="metric-card"><span>UV</span><strong id="admin-uv">OFF</strong></div>
+          </div>
+        </div>
       </div>
 
       <!-- Settings Section -->

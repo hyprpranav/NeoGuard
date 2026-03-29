@@ -8,6 +8,44 @@ const auth = firebase.auth();
 const database = firebase.database();
 
 let currentUser = null;
+let adminTelemetryRef = null;
+let adminStatusRef = null;
+
+const adminElements = {
+  deviceSelect: document.getElementById('admin-device-select'),
+  status: document.getElementById('admin-device-status'),
+  babyTemp: document.getElementById('admin-baby-temp'),
+  envTemp: document.getElementById('admin-env-temp'),
+  spo2: document.getElementById('admin-spo2'),
+  heartRate: document.getElementById('admin-heart-rate'),
+  pulse: document.getElementById('admin-pulse'),
+  wifi: document.getElementById('admin-wifi'),
+  heater: document.getElementById('admin-heater'),
+  uv: document.getElementById('admin-uv')
+};
+
+const demoDevices = {
+  'neoguard-two': {
+    babyTemp: 36.7,
+    envTemp: 29.4,
+    spo2: 98,
+    heartRate: 132,
+    pulse: 130,
+    wifiConnected: false,
+    heaterOn: false,
+    uvOn: false
+  },
+  'neoguard-three': {
+    babyTemp: 36.9,
+    envTemp: 30.2,
+    spo2: 97,
+    heartRate: 128,
+    pulse: 127,
+    wifiConnected: false,
+    heaterOn: true,
+    uvOn: false
+  }
+};
 
 auth.onAuthStateChanged((user) => {
   if (!user) {
@@ -27,6 +65,7 @@ auth.onAuthStateChanged((user) => {
   loadPendingUsers();
   loadAllUsers();
   loadDeviceLogs();
+  setupDeviceSection();
 });
 
 function showSection(sectionId) {
@@ -40,9 +79,78 @@ function showSection(sectionId) {
     'pending-users': 'Pending User Approvals',
     'user-management': 'User Management',
     'device-logs': 'Device Logs',
+    'devices': 'Device Monitor',
     'settings': 'System Settings'
   };
   document.getElementById('section-title').textContent = titles[sectionId] || 'Admin Dashboard';
+}
+
+function formatMetric(value, suffix = '') {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return `--${suffix}`;
+  }
+  return `${Number(value)}${suffix}`;
+}
+
+function renderAdminDevice(data) {
+  adminElements.babyTemp.textContent = formatMetric(data.babyTemp, '°C');
+  adminElements.envTemp.textContent = formatMetric(data.envTemp, '°C');
+  adminElements.spo2.textContent = formatMetric(data.spo2, '%');
+  adminElements.heartRate.textContent = formatMetric(data.heartRate, ' bpm');
+  adminElements.pulse.textContent = formatMetric(data.pulse, ' bpm');
+  adminElements.heater.textContent = data.heaterOn ? 'ON' : 'OFF';
+  adminElements.uv.textContent = data.uvOn ? 'ON' : 'OFF';
+}
+
+function renderAdminConnection(status) {
+  adminElements.wifi.textContent = status?.wifiConnected ? 'CONNECTED' : 'OFFLINE';
+}
+
+function clearAdminSubscriptions() {
+  if (adminTelemetryRef) {
+    adminTelemetryRef.off();
+    adminTelemetryRef = null;
+  }
+  if (adminStatusRef) {
+    adminStatusRef.off();
+    adminStatusRef = null;
+  }
+}
+
+function subscribeAdminToDevice(deviceId) {
+  clearAdminSubscriptions();
+
+  if (deviceId !== 'neoguard-one') {
+    const demo = demoDevices[deviceId];
+    renderAdminDevice(demo);
+    renderAdminConnection({ wifiConnected: false });
+    adminElements.status.textContent = `${deviceId} is a demo source.`;
+    return;
+  }
+
+  adminElements.status.textContent = 'Listening to live telemetry from neoguard-one...';
+  adminTelemetryRef = database.ref(`devices/${deviceId}/telemetry/latest`);
+  adminStatusRef = database.ref(`devices/${deviceId}/status/connection`);
+
+  adminTelemetryRef.on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    renderAdminDevice(data);
+  });
+
+  adminStatusRef.on('value', (snapshot) => {
+    renderAdminConnection(snapshot.val() || {});
+  });
+}
+
+function setupDeviceSection() {
+  if (!adminElements.deviceSelect) {
+    return;
+  }
+
+  subscribeAdminToDevice(adminElements.deviceSelect.value);
+  adminElements.deviceSelect.addEventListener('change', (event) => {
+    subscribeAdminToDevice(event.target.value);
+  });
 }
 
 async function loadPendingUsers() {
@@ -161,6 +269,7 @@ function downloadLogs() {
 }
 
 function handleLogout() {
+  clearAdminSubscriptions();
   localStorage.removeItem('neoguard-auth');
   localStorage.removeItem('neoguard-user');
   auth.signOut().then(() => {
