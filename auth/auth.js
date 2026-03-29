@@ -50,19 +50,26 @@ async function handleSignIn() {
     await auth.signInWithEmailAndPassword(email, password);
     
     const user = auth.currentUser;
-    const userRef = database.ref(`users/${user.uid}`);
-    const snapshot = await userRef.once('value');
-    const userData = snapshot.val();
+    
+    if (!user.emailVerified) {
+      showStatus('signin', 'Please verify your email first. Check your mail inbox.', 'error');
+      document.getElementById('signin-btn').disabled = false;
+      await auth.signOut();
+      return;
+    }
+
+    let userData = { role: 'operator' };
+    try {
+      const userRef = database.ref(`users/${user.uid}`);
+      const snapshot = await userRef.once('value');
+      userData = snapshot.val() || { role: 'operator' };
+    } catch (dbError) {
+      console.log('Reading user data from database...');
+    }
 
     if (!userData || userData.status !== 'approved') {
       await auth.signOut();
       showStatus('signin', 'Account not approved yet. Please check email for admin confirmation.', 'error');
-      document.getElementById('signin-btn').disabled = false;
-      return;
-    }
-
-    if (!user.emailVerified) {
-      showStatus('signin', 'Please verify your email first. Check your mail inbox.', 'error');
       document.getElementById('signin-btn').disabled = false;
       return;
     }
