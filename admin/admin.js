@@ -6,6 +6,7 @@ if (!window.NEOGUARD_FIREBASE_CONFIG) {
 firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
 const auth = firebase.auth();
 const database = firebase.database();
+const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
 
 let currentUser = null;
 let adminTelemetryRef = null;
@@ -47,18 +48,53 @@ const demoDevices = {
   }
 };
 
+function isBootstrapAdmin(email) {
+  return BOOTSTRAP_ADMIN_EMAILS.includes((email || '').toLowerCase());
+}
+
+async function ensureAdminProfile(user) {
+  if (!user || !isBootstrapAdmin(user.email)) {
+    return;
+  }
+
+  await database.ref(`users/${user.uid}`).update({
+    name: user.displayName || 'System Admin',
+    email: user.email,
+    role: 'admin',
+    status: 'approved',
+    emailVerified: true,
+    updatedAt: new Date().toISOString()
+  });
+}
+
 auth.onAuthStateChanged((user) => {
+  (async () => {
   if (!user) {
     window.location.href = './auth.html';
     return;
   }
 
+  try {
+    await ensureAdminProfile(user);
+  } catch (error) {
+    console.error('Failed to ensure admin profile:', error.message);
+  }
+
   const userDataStr = localStorage.getItem('neoguard-user');
   const userObj = JSON.parse(userDataStr || '{}');
-  
-  if (userObj.role !== 'admin') {
-    window.location.href = './web/index.html';
-    return;
+
+  if (userObj.role !== 'admin' && !isBootstrapAdmin(user.email)) {
+    try {
+      const profileSnap = await database.ref(`users/${user.uid}`).once('value');
+      const profile = profileSnap.val() || {};
+      if (profile.role !== 'admin') {
+        window.location.href = './web/index.html';
+        return;
+      }
+    } catch (error) {
+      window.location.href = './web/index.html';
+      return;
+    }
   }
 
   currentUser = { uid: user.uid, email: user.email, ...userObj };
@@ -66,6 +102,7 @@ auth.onAuthStateChanged((user) => {
   loadAllUsers();
   loadDeviceLogs();
   setupDeviceSection();
+  })();
 });
 
 function showSection(sectionId) {
@@ -154,45 +191,60 @@ function setupDeviceSection() {
 }
 
 async function loadPendingUsers() {
-  const ref = database.ref('users');
-  const snapshot = await ref.orderByChild('status').equalTo('pending').once('value');
-  const users = snapshot.val() || {};
+  try {
+    const ref = database.ref('users');
+    const snapshot = await ref.once('value');
+    const users = snapshot.val() || {};
 
-  const html = Object.entries(users).map(([uid, user]) => `
-    <div class="card user-card">
-      <div class="user-info">
-        <div class="user-name">${user.name}</div>
-        <div class="user-email">${user.email}</div>
-        <div class="user-status pending">PENDING VERIFICATION</div>
+    const pendingEntries = Object.entries(users).filter(([, user]) => user?.status === 'pending');
+    const html = pendingEntries.map(([uid, user]) => `
+      <div class="card user-card">
+        <div class="user-info">
+          <div class="user-name">${user.name || 'Unnamed user'}</div>
+          <div class="user-email">${user.email || 'No email'}</div>
+          <div class="user-status pending">PENDING APPROVAL</div>
+        </div>
+        <div class="user-actions">
+          <button class="btn-approve" onclick="approveUser('${uid}', '${user.email || ''}')">Approve</button>
+          <button class="btn-reject" onclick="rejectUser('${uid}')">Reject</button>
+        </div>
       </div>
-      <div class="user-actions">
-        <button class="btn-approve" onclick="approveUser('${uid}', '${user.email}')">Approve</button>
-        <button class="btn-reject" onclick="rejectUser('${uid}')">Reject</button>
-      </div>
-    </div>
-  `).join('');
+    `).join('');
 
-  document.getElementById('pending-users-list').innerHTML = html || '<div class="empty-state">No pending approvals</div>';
+    document.getElementById('pending-users-list').innerHTML = html || '<div class="empty-state">No pending approvals</div>';
+  } catch (error) {
+    console.error('Pending load error:', error.message);
+    document.getElementById('pending-users-list').innerHTML = '<div class="empty-state">Unable to load pending users. Check Firebase rules and admin role.</div>';
+  }
 }
 
 async function loadAllUsers() {
-  const ref = database.ref('users');
-  const snapshot = await ref.once('value');
-  const users = snapshot.val() || {};
+  try {
+    const ref = database.ref('users');
+    const snapshot = await ref.once('value');
+    const users = snapshot.val() || {};
 
-  const rows = Object.entries(users).map(([uid, user]) => `
-    <tr>
-      <td>${user.name}</td>
-      <td>${user.email}</td>
-      <td class="status-${user.status}">${user.status.toUpperCase()}</td>
-      <td>${user.role || 'operator'}</td>
-      <td>
-        <button class="btn-reset" onclick="resetUserPassword('${user.email}')">Reset Password</button>
-      </td>
-    </tr>
-  `).join('');
+    const rows = Object.entries(users).map(([uid, user]) => {
+      const role = user.role || 'operator';
+      const status = (user.status || 'unknown').toUpperCase();
+      return `
+      <tr>
+        <td>${user.name || 'Unnamed user'}</td>
+        <td>${user.email || 'No email'}</td>
+        <td class="status-${(user.status || 'unknown')}">${status}</td>
+        <td>${role}</td>
+        <td>
+          <button class="btn-reset" onclick="resetUserPassword('${user.email || ''}')">Reset Password</button>
+        </td>
+      </tr>
+    `;
+    }).join('');
 
-  document.getElementById('user-table-body').innerHTML = rows || '<tr><td colspan="5" style="text-align: center; color: #bac4ff;">No users found</td></tr>';
+    document.getElementById('user-table-body').innerHTML = rows || '<tr><td colspan="5" style="text-align: center; color: #bac4ff;">No users found</td></tr>';
+  } catch (error) {
+    console.error('User list load error:', error.message);
+    document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff6b91;">Unable to load user list. Verify rules and admin role.</td></tr>';
+  }
 }
 
 async function approveUser(uid, email) {
