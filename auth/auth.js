@@ -6,7 +6,7 @@ if (!window.NEOGUARD_FIREBASE_CONFIG) {
 firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
 const auth = firebase.auth();
 const database = firebase.database();
-const BOOTSTRAP_ADMIN_EMAILS = ['suruthi@gmail.com'];
+const BOOTSTRAP_ADMIN_EMAILS = ['harishspranav2006@gmail.com'];
 
 function isBootstrapAdmin(email) {
   return BOOTSTRAP_ADMIN_EMAILS.includes((email || '').toLowerCase());
