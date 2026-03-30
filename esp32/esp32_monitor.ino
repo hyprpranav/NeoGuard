@@ -19,6 +19,7 @@ const char* DEVICE_ID = "neoguard-one";
 
 const unsigned long SENSOR_INTERVAL_MS = 1000;
 const unsigned long CLOUD_PUSH_INTERVAL_MS = 3500;
+const unsigned long CLOUD_STATUS_INTERVAL_MS = 5000;
 const unsigned long WIFI_RETRY_INTERVAL_MS = 10000;
 
 const int ONE_WIRE_BUS = 4;
@@ -38,11 +39,17 @@ float spo2 = NAN;
 float heartRate = NAN;
 int pulseValue = 0;
 bool max30100Ready = false;
+bool babyTempValid = false;
+bool envTempValid = false;
+bool spo2Valid = false;
+bool heartRateValid = false;
 
 unsigned long lastSensorRead = 0;
 unsigned long lastMax30100Report = 0;
 unsigned long lastCloudPush = 0;
+unsigned long lastCloudStatus = 0;
 unsigned long lastWifiRetry = 0;
+bool onlinePublished = false;
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -96,6 +103,21 @@ void setupFirebase() {
   Firebase.begin(&firebaseConfig, &auth);
 }
 
+void publishConnectionStatus() {
+  if (!firebaseReady || !Firebase.ready()) {
+    return;
+  }
+
+  FirebaseJson status;
+  status.set("wifiConnected", WiFi.status() == WL_CONNECTED);
+  status.set("systemLive", true);
+  status.set("uptimeMs", (int) millis());
+  status.set("sensorDataAvailable", babyTempValid || envTempValid || spo2Valid || heartRateValid);
+  status.set("updatedAt/.sv", "timestamp");
+
+  firebasePathSetJson(deviceRoot() + "/status/connection", status);
+}
+
 void publishTelemetry() {
   if (!firebaseReady || !Firebase.ready()) {
     return;
@@ -107,6 +129,11 @@ void publishTelemetry() {
   latest.set("spo2", isnan(spo2) ? 0 : spo2);
   latest.set("heartRate", isnan(heartRate) ? 0 : heartRate);
   latest.set("pulse", pulseValue);
+  latest.set("babyTempValid", babyTempValid);
+  latest.set("envTempValid", envTempValid);
+  latest.set("spo2Valid", spo2Valid);
+  latest.set("heartRateValid", heartRateValid);
+  latest.set("sensorDataAvailable", babyTempValid || envTempValid || spo2Valid || heartRateValid);
   latest.set("wifiConnected", WiFi.status() == WL_CONNECTED);
   latest.set("systemLive", true);
   latest.set("uptimeMs", (int) millis());
@@ -120,6 +147,11 @@ void publishTelemetry() {
   history.set("spo2", isnan(spo2) ? 0 : spo2);
   history.set("heartRate", isnan(heartRate) ? 0 : heartRate);
   history.set("pulse", pulseValue);
+  history.set("babyTempValid", babyTempValid);
+  history.set("envTempValid", envTempValid);
+  history.set("spo2Valid", spo2Valid);
+  history.set("heartRateValid", heartRateValid);
+  history.set("sensorDataAvailable", babyTempValid || envTempValid || spo2Valid || heartRateValid);
   history.set("systemLive", true);
   history.set("createdAt/.sv", "timestamp");
 
@@ -134,18 +166,37 @@ void readSensors() {
 
   pulseValue = constrain(map(rawPulse, 0, 4095, 55, 155), 55, 155);
 
-  if (nextBabyTemp != DEVICE_DISCONNECTED_C && nextBabyTemp >= 20.0f && nextBabyTemp <= 45.0f) {
+  babyTempValid = (nextBabyTemp != DEVICE_DISCONNECTED_C && nextBabyTemp >= 20.0f && nextBabyTemp <= 45.0f);
+  if (babyTempValid) {
     babyTemp = nextBabyTemp;
+  } else {
+    babyTemp = NAN;
   }
 
-  if (!isnan(nextEnvTemp)) {
+  envTempValid = !isnan(nextEnvTemp);
+  if (envTempValid) {
     envTemp = nextEnvTemp;
+  } else {
+    envTemp = NAN;
   }
 
   if (max30100Ready && millis() - lastMax30100Report >= REPORTING_PERIOD_MS) {
     heartRate = pox.getHeartRate();
     spo2 = pox.getSpO2();
+    heartRateValid = !isnan(heartRate) && heartRate > 20.0f && heartRate < 250.0f;
+    spo2Valid = !isnan(spo2) && spo2 > 50.0f && spo2 <= 100.0f;
+    if (!heartRateValid) {
+      heartRate = NAN;
+    }
+    if (!spo2Valid) {
+      spo2 = NAN;
+    }
     lastMax30100Report = millis();
+  } else if (!max30100Ready) {
+    heartRate = NAN;
+    spo2 = NAN;
+    heartRateValid = false;
+    spo2Valid = false;
   }
 }
 
@@ -180,10 +231,21 @@ void loop() {
   }
 
   if (!ensureWifiConnected()) {
+    onlinePublished = false;
     return;
   }
 
   firebaseReady = Firebase.ready();
+
+  if (firebaseReady && !onlinePublished) {
+    publishConnectionStatus();
+    onlinePublished = true;
+  }
+
+  if (firebaseReady && millis() - lastCloudStatus >= CLOUD_STATUS_INTERVAL_MS) {
+    lastCloudStatus = millis();
+    publishConnectionStatus();
+  }
 
   if (firebaseReady && millis() - lastCloudPush >= CLOUD_PUSH_INTERVAL_MS) {
     lastCloudPush = millis();
