@@ -381,10 +381,6 @@ void readSensors() {
     envTemp = nextEnvTemp;
   }
 
-  if (max30100Ready && !pox.update()) {
-    sensorFault = true;
-  }
-
   if (max30100Ready && millis() - lastMax30100Report >= REPORTING_PERIOD_MS) {
     heartRate = pox.getHeartRate();
     spo2 = pox.getSpO2();
