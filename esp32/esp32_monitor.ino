@@ -18,13 +18,17 @@ const char* FIREBASE_USER_PASSWORD = "927624BEC066";
 const char* DEVICE_ID = "neoguard-one";
 
 const unsigned long SENSOR_INTERVAL_MS = 1000;
-const unsigned long CLOUD_PUSH_INTERVAL_MS = 3500;
+const unsigned long CLOUD_PUSH_INTERVAL_MS = 3000;
 const unsigned long CLOUD_STATUS_INTERVAL_MS = 5000;
+const unsigned long CLOUD_COMMAND_POLL_MS = 1500;
 const unsigned long WIFI_RETRY_INTERVAL_MS = 10000;
 
 const int ONE_WIRE_BUS = 4;
 const int DHT_PIN = 14;
 const int PULSE_SENSOR_PIN = 34;
+const int HEATER_RELAY_PIN = 26;
+const int UV_RELAY_PIN = 25;
+const int SAFETY_RELAY_PIN = 27;
 
 const uint32_t REPORTING_PERIOD_MS = 1000;
 
@@ -48,8 +52,13 @@ unsigned long lastSensorRead = 0;
 unsigned long lastMax30100Report = 0;
 unsigned long lastCloudPush = 0;
 unsigned long lastCloudStatus = 0;
+unsigned long lastCloudCommandPoll = 0;
 unsigned long lastWifiRetry = 0;
 bool onlinePublished = false;
+bool heaterOn = false;
+bool uvOn = false;
+bool safetyRelayOn = true;
+String lastCommandRequestId = "";
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -58,6 +67,21 @@ bool firebaseReady = false;
 
 void onBeatDetected() {
   // Callback for pulse detection
+}
+
+void setHeater(bool enabled) {
+  heaterOn = enabled;
+  digitalWrite(HEATER_RELAY_PIN, enabled ? HIGH : LOW);
+}
+
+void setUv(bool enabled) {
+  uvOn = enabled;
+  digitalWrite(UV_RELAY_PIN, enabled ? LOW : HIGH);
+}
+
+void setSafetyRelay(bool enabled) {
+  safetyRelayOn = enabled;
+  digitalWrite(SAFETY_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 String deviceRoot() {
@@ -90,7 +114,13 @@ bool ensureWifiConnected() {
 }
 
 bool firebasePathSetJson(const String& path, FirebaseJson& json) {
-  return Firebase.RTDB.setJSON(&fbdo, path.c_str(), &json);
+  if (!Firebase.RTDB.setJSON(&fbdo, path.c_str(), &json)) {
+    Serial.print("Firebase setJSON failed: ");
+    Serial.println(fbdo.errorReason());
+    return false;
+  }
+
+  return true;
 }
 
 void setupFirebase() {
@@ -115,7 +145,9 @@ void publishConnectionStatus() {
   status.set("sensorDataAvailable", babyTempValid || envTempValid || spo2Valid || heartRateValid);
   status.set("updatedAt/.sv", "timestamp");
 
-  firebasePathSetJson(deviceRoot() + "/status/connection", status);
+  if (firebasePathSetJson(deviceRoot() + "/status/connection", status)) {
+    Serial.println("Cloud status updated");
+  }
 }
 
 void publishTelemetry() {
@@ -138,8 +170,13 @@ void publishTelemetry() {
   latest.set("systemLive", true);
   latest.set("uptimeMs", (int) millis());
   latest.set("updatedAt/.sv", "timestamp");
+  latest.set("heaterOn", heaterOn);
+  latest.set("uvOn", uvOn);
+  latest.set("safetyRelayOn", safetyRelayOn);
 
-  firebasePathSetJson(deviceRoot() + "/telemetry/latest", latest);
+  if (firebasePathSetJson(deviceRoot() + "/telemetry/latest", latest)) {
+    Serial.println("Telemetry pushed to cloud");
+  }
 
   FirebaseJson history;
   history.set("babyTemp", isnan(babyTemp) ? 0 : babyTemp);
@@ -154,8 +191,99 @@ void publishTelemetry() {
   history.set("sensorDataAvailable", babyTempValid || envTempValid || spo2Valid || heartRateValid);
   history.set("systemLive", true);
   history.set("createdAt/.sv", "timestamp");
+  history.set("heaterOn", heaterOn);
+  history.set("uvOn", uvOn);
+  history.set("safetyRelayOn", safetyRelayOn);
 
-  Firebase.RTDB.pushJSON(&fbdo, (deviceRoot() + "/telemetry/history").c_str(), &history);
+  if (!Firebase.RTDB.pushJSON(&fbdo, (deviceRoot() + "/telemetry/history").c_str(), &history)) {
+    Serial.print("Firebase pushJSON failed: ");
+    Serial.println(fbdo.errorReason());
+  }
+}
+
+bool parseSwitchState(const String& rawValue, bool currentValue, bool* hasValue) {
+  String value = rawValue;
+  value.trim();
+  value.toLowerCase();
+
+  if (value == "on") {
+    *hasValue = true;
+    return true;
+  }
+
+  if (value == "off") {
+    *hasValue = true;
+    return false;
+  }
+
+  *hasValue = false;
+  return currentValue;
+}
+
+void acknowledgeCommand(const String& requestId) {
+  FirebaseJson ack;
+  ack.set("requestId", requestId);
+  ack.set("heaterOn", heaterOn);
+  ack.set("uvOn", uvOn);
+  ack.set("safetyRelayOn", safetyRelayOn);
+  ack.set("systemLive", true);
+  ack.set("processedAt/.sv", "timestamp");
+
+  if (!firebasePathSetJson(deviceRoot() + "/commands/ack", ack)) {
+    Serial.println("Failed to write command ack");
+  }
+}
+
+void consumeCloudCommands() {
+  if (!firebaseReady || !Firebase.ready()) {
+    return;
+  }
+
+  const String commandPath = deviceRoot() + "/commands/manual";
+  if (!Firebase.RTDB.getJSON(&fbdo, commandPath.c_str())) {
+    return;
+  }
+
+  FirebaseJsonData jsonData;
+  FirebaseJson& commandJson = fbdo.jsonObject();
+
+  String requestId = "";
+  String heaterStateRaw = "";
+  String uvStateRaw = "";
+
+  if (commandJson.get(jsonData, "requestId") && jsonData.success) {
+    requestId = jsonData.stringValue;
+  }
+
+  if (requestId.length() == 0 || requestId == lastCommandRequestId) {
+    return;
+  }
+
+  if (commandJson.get(jsonData, "heaterState") && jsonData.success) {
+    heaterStateRaw = jsonData.stringValue;
+  }
+
+  if (commandJson.get(jsonData, "uvState") && jsonData.success) {
+    uvStateRaw = jsonData.stringValue;
+  }
+
+  bool hasHeater = false;
+  bool hasUv = false;
+  bool nextHeater = parseSwitchState(heaterStateRaw, heaterOn, &hasHeater);
+  bool nextUv = parseSwitchState(uvStateRaw, uvOn, &hasUv);
+
+  if (hasHeater) {
+    setHeater(nextHeater);
+  }
+
+  if (hasUv) {
+    setUv(nextUv);
+  }
+
+  lastCommandRequestId = requestId;
+  acknowledgeCommand(requestId);
+  Serial.print("Processed command ");
+  Serial.println(requestId);
 }
 
 void readSensors() {
@@ -203,6 +331,13 @@ void readSensors() {
 void setup() {
   Serial.begin(115200);
 
+  pinMode(HEATER_RELAY_PIN, OUTPUT);
+  pinMode(UV_RELAY_PIN, OUTPUT);
+  pinMode(SAFETY_RELAY_PIN, OUTPUT);
+  setHeater(false);
+  setUv(false);
+  setSafetyRelay(true);
+
   dht.begin();
   babySensor.begin();
   Wire.begin();
@@ -232,6 +367,7 @@ void loop() {
 
   if (!ensureWifiConnected()) {
     onlinePublished = false;
+    Serial.println("WiFi not connected, retrying...");
     return;
   }
 
@@ -250,5 +386,10 @@ void loop() {
   if (firebaseReady && millis() - lastCloudPush >= CLOUD_PUSH_INTERVAL_MS) {
     lastCloudPush = millis();
     publishTelemetry();
+  }
+
+  if (firebaseReady && millis() - lastCloudCommandPoll >= CLOUD_COMMAND_POLL_MS) {
+    lastCloudCommandPoll = millis();
+    consumeCloudCommands();
   }
 }
