@@ -15,7 +15,7 @@ let adminLatestTelemetry = null;
 let adminLatestConnection = null;
 let adminLastTelemetryEventAt = 0;
 let adminLastConnectionEventAt = 0;
-const ADMIN_LIVE_TIMEOUT_MS = 15000;
+const ADMIN_LIVE_TIMEOUT_MS = 30000;
 
 const adminElements = {
   deviceSelect: document.getElementById('admin-device-select'),
@@ -172,12 +172,9 @@ function isFresh(value, timeoutMs) {
 }
 
 function refreshAdminCloudState() {
-  const wifiConnected = Boolean(adminLatestConnection?.wifiConnected);
-  const statusFresh = isFresh(adminLatestConnection?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
   const telemetryFresh = isFresh(adminLatestTelemetry?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
-  const eventFresh = (Date.now() - adminLastTelemetryEventAt <= ADMIN_LIVE_TIMEOUT_MS)
-    || (Date.now() - adminLastConnectionEventAt <= ADMIN_LIVE_TIMEOUT_MS);
-  const live = wifiConnected && (statusFresh || telemetryFresh || eventFresh);
+  const eventFresh = Date.now() - adminLastTelemetryEventAt <= ADMIN_LIVE_TIMEOUT_MS;
+  const live = telemetryFresh || eventFresh;
 
   adminElements.cloudSync.textContent = live ? 'LIVE' : 'DISCONNECTED';
   adminElements.cloudSync.classList.remove('status-safe', 'status-danger');
@@ -186,6 +183,7 @@ function refreshAdminCloudState() {
 
 function renderAdminDevice(data) {
   adminLatestTelemetry = data || {};
+  const sensorDataAvailable = data.sensorDataAvailable !== false;
   adminElements.babyTemp.textContent = formatMetric(data.babyTemp, '°C');
   adminElements.envTemp.textContent = formatMetric(data.envTemp, '°C');
   adminElements.spo2.textContent = formatMetric(data.spo2, '%');
@@ -194,8 +192,14 @@ function renderAdminDevice(data) {
   adminElements.heater.textContent = data.heaterOn ? 'ON' : 'OFF';
   adminElements.uv.textContent = data.uvOn ? 'ON' : 'OFF';
   adminElements.safetyRelay.textContent = data.safetyRelayOn ? 'ARMED' : 'OFF';
-  adminElements.safetyCondition.textContent = data.safetyCondition || 'Monitoring';
-  applySafetyClass(adminElements.safetyCondition, data.safetyCondition || 'Monitoring');
+  if (!sensorDataAvailable) {
+    adminElements.safetyCondition.textContent = 'Sensor data failed';
+    adminElements.safetyCondition.classList.remove('status-safe', 'status-warning');
+    adminElements.safetyCondition.classList.add('status-danger');
+  } else {
+    adminElements.safetyCondition.textContent = data.safetyCondition || 'Monitoring';
+    applySafetyClass(adminElements.safetyCondition, data.safetyCondition || 'Monitoring');
+  }
   adminElements.lastUpdated.textContent = formatTimestamp(data.updatedAt || data.createdAt);
   refreshAdminCloudState();
 }

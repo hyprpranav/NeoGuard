@@ -14,7 +14,7 @@ const state = {
 };
 
 const HEATER_PIN = '0000';
-const LIVE_TIMEOUT_MS = 15000;
+const LIVE_TIMEOUT_MS = 30000;
 
 const elements = {
   logoutButton: document.getElementById('logout-btn'),
@@ -86,8 +86,14 @@ function render(data) {
   elements.spo2.textContent = formatNumber(data.spo2, 0, '%');
   elements.heartRate.textContent = formatNumber(data.heartRate, 0, ' bpm');
   elements.pulse.textContent = formatNumber(data.pulse, 0, ' bpm');
-  elements.safetyCondition.textContent = data.safetyCondition || 'Awaiting device data';
-  elements.safetyCondition.className = applySafetyClass(data.safetyCondition);
+  const sensorDataAvailable = data.sensorDataAvailable !== false;
+  if (!sensorDataAvailable) {
+    elements.safetyCondition.textContent = 'Sensor data failed';
+    elements.safetyCondition.className = 'danger';
+  } else {
+    elements.safetyCondition.textContent = data.safetyCondition || 'Awaiting device data';
+    elements.safetyCondition.className = applySafetyClass(data.safetyCondition);
+  }
   elements.heaterState.textContent = data.heaterOn ? 'ON' : 'OFF';
   elements.heaterState.className = data.heaterOn ? 'safe' : 'warning';
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
@@ -130,12 +136,9 @@ function isFreshTimestamp(value, timeoutMs) {
 }
 
 function isDeviceLive() {
-  const wifiConnected = Boolean(state.connection?.wifiConnected);
-  const connectionFresh = isFreshTimestamp(state.connection?.updatedAt, LIVE_TIMEOUT_MS);
   const telemetryFresh = isFreshTimestamp(state.latest?.updatedAt, LIVE_TIMEOUT_MS);
-  const realtimeEventFresh = (Date.now() - state.lastTelemetryEventAt <= LIVE_TIMEOUT_MS)
-    || (Date.now() - state.lastConnectionEventAt <= LIVE_TIMEOUT_MS);
-  return wifiConnected && (connectionFresh || telemetryFresh || realtimeEventFresh);
+  const realtimeEventFresh = Date.now() - state.lastTelemetryEventAt <= LIVE_TIMEOUT_MS;
+  return telemetryFresh || realtimeEventFresh;
 }
 
 function applyLiveState() {
@@ -149,8 +152,8 @@ function applyLiveState() {
   } else {
     elements.cloudState.textContent = 'DISCONNECTED';
     elements.cloudState.className = 'danger';
-    elements.commandStatus.textContent = 'System not live. Manual controls are locked.';
-    elements.historyNote.textContent = 'System data is not live. View the previous data when the system is on.';
+    elements.commandStatus.textContent = 'No telemetry for 30 seconds. Manual controls are locked.';
+    elements.historyNote.textContent = 'Device is offline or stalled. Previous data is still available.';
   }
 
   elements.buttons.forEach((button) => {
