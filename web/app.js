@@ -108,7 +108,7 @@ function render(data) {
 
 function renderConnection(connectionStatus) {
   state.connection = connectionStatus || {};
-  const connected = Boolean(state.connection?.wifiConnected);
+  const connected = Boolean(state.connection?.wifiConnected) && isFreshTimestamp(state.connection?.updatedAt, LIVE_TIMEOUT_MS);
   elements.wifiState.textContent = connected ? 'CONNECTED' : 'OFFLINE';
   elements.wifiState.className = connected ? 'safe' : 'danger';
   applyLiveState();
@@ -138,7 +138,8 @@ function isFreshTimestamp(value, timeoutMs) {
 function isDeviceLive() {
   const telemetryFresh = isFreshTimestamp(state.latest?.updatedAt, LIVE_TIMEOUT_MS);
   const realtimeEventFresh = Date.now() - state.lastTelemetryEventAt <= LIVE_TIMEOUT_MS;
-  return telemetryFresh || realtimeEventFresh;
+  const connectionFresh = isFreshTimestamp(state.connection?.updatedAt, LIVE_TIMEOUT_MS);
+  return (telemetryFresh || realtimeEventFresh) && connectionFresh;
 }
 
 function applyLiveState() {

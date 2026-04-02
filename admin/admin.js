@@ -174,7 +174,8 @@ function isFresh(value, timeoutMs) {
 function refreshAdminCloudState() {
   const telemetryFresh = isFresh(adminLatestTelemetry?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
   const eventFresh = Date.now() - adminLastTelemetryEventAt <= ADMIN_LIVE_TIMEOUT_MS;
-  const live = telemetryFresh || eventFresh;
+  const statusFresh = isFresh(adminLatestConnection?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
+  const live = (telemetryFresh || eventFresh) && statusFresh;
 
   adminElements.cloudSync.textContent = live ? 'LIVE' : 'DISCONNECTED';
   adminElements.cloudSync.classList.remove('status-safe', 'status-danger');
@@ -206,7 +207,7 @@ function renderAdminDevice(data) {
 
 function renderAdminConnection(status) {
   adminLatestConnection = status || {};
-  const connected = status?.wifiConnected;
+  const connected = Boolean(status?.wifiConnected) && isFresh(status?.updatedAt, ADMIN_LIVE_TIMEOUT_MS);
   adminElements.wifi.textContent = connected ? 'CONNECTED' : 'OFFLINE';
   adminElements.wifi.classList.remove('status-safe', 'status-danger');
   adminElements.wifi.classList.add(connected ? 'status-safe' : 'status-danger');
