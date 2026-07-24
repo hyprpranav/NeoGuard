@@ -8,6 +8,41 @@ const {
   setConfiguredDeviceIp,
 } = require('./database');
 
+function normalizeProfileInput(value, fallback = '') {
+  const text = String(value ?? fallback).trim();
+  return text;
+}
+
+function buildProfileQuery(profile) {
+  const params = new URLSearchParams();
+
+  if (profile.birthWeight !== undefined) params.set('birthWeight', String(profile.birthWeight));
+  if (profile.gestationalAge !== undefined) params.set('gestationalAge', String(profile.gestationalAge));
+  if (profile.feedingInterval !== undefined) params.set('feedingInterval', String(profile.feedingInterval));
+  if (profile.sleepDuration !== undefined) params.set('sleepDuration', String(profile.sleepDuration));
+  if (profile.vaccinationStatus !== undefined) params.set('vaccinationStatus', profile.vaccinationStatus);
+  if (profile.symptoms !== undefined) params.set('symptoms', profile.symptoms);
+
+  return params.toString();
+}
+
+async function forwardProfileToDevice(profile, deviceIp) {
+  const baseUrl = normalizeDeviceIp(deviceIp);
+
+  if (!baseUrl) {
+    return null;
+  }
+
+  const query = buildProfileQuery(profile);
+  const response = await fetch(`${baseUrl}/profile${query ? `?${query}` : ''}`);
+
+  if (!response.ok) {
+    throw new Error(`ESP32 returned HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
 async function fetchDeviceSnapshot(deviceIp) {
   const baseUrl = normalizeDeviceIp(deviceIp);
 
@@ -83,6 +118,51 @@ function createRouter() {
       });
 
       response.status(201).json({ ok: true, data: saved });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/profile', async (_request, response) => {
+    const latest = await getLatestReading();
+    response.json({ ok: true, profile: latest.manualProfile || {} });
+  });
+
+  router.post('/profile', async (request, response, next) => {
+    try {
+      const profile = {
+        birthWeight: request.body?.birthWeight ?? request.body?.birthWeightKg,
+        gestationalAge: request.body?.gestationalAge,
+        feedingInterval: request.body?.feedingInterval,
+        sleepDuration: request.body?.sleepDuration,
+        vaccinationStatus: normalizeProfileInput(request.body?.vaccinationStatus),
+        symptoms: normalizeProfileInput(request.body?.symptoms),
+      };
+
+      const latest = await getLatestReading();
+      const saved = await saveReading({
+        ...latest,
+        manualProfile: {
+          birthWeightKg: Number(profile.birthWeight ?? latest.manualProfile?.birthWeightKg ?? 0) || null,
+          gestationalAgeWeeks: Number(profile.gestationalAge ?? latest.manualProfile?.gestationalAgeWeeks ?? 0) || null,
+          feedingIntervalMinutes: Number(profile.feedingInterval ?? latest.manualProfile?.feedingIntervalMinutes ?? 0) || null,
+          sleepDurationHours: Number(profile.sleepDuration ?? latest.manualProfile?.sleepDurationHours ?? 0) || null,
+          vaccinationStatus: profile.vaccinationStatus || latest.manualProfile?.vaccinationStatus || '',
+          symptoms: profile.symptoms || latest.manualProfile?.symptoms || '',
+        },
+        capturedAt: new Date().toISOString(),
+      });
+
+      const configuredIp = getConfiguredDeviceIp();
+      if (configuredIp) {
+        try {
+          await forwardProfileToDevice(profile, configuredIp);
+        } catch (deviceError) {
+          console.warn(deviceError.message);
+        }
+      }
+
+      response.json({ ok: true, data: saved });
     } catch (error) {
       next(error);
     }

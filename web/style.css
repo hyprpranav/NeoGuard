@@ -186,6 +186,51 @@ select {
   gap: 18px;
 }
 
+.ai-card {
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+
+.ai-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ai-summary-grid div,
+.ai-recommendation-card,
+.manual-input-grid label {
+  background: rgba(7, 13, 34, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.ai-summary-grid div {
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.ai-summary-grid strong,
+.ai-recommendation-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(1rem, 4vw, 1.7rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.ai-recommendation-card {
+  padding: 16px;
+  border-radius: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.ai-recommendation-card small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .hero-statuses {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -231,6 +276,52 @@ select {
 
 .controls-card {
   padding: 22px;
+}
+
+.manual-inputs {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.manual-input-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manual-input-grid label {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.manual-input-grid span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.manual-input-grid input,
+.manual-input-grid textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(5, 10, 30, 0.3);
+  color: var(--text);
+  outline: none;
+  resize: vertical;
+}
+
+.manual-textarea {
+  grid-column: 1 / -1;
+}
+
+.manual-actions {
+  margin-top: 2px;
 }
 
 .history-card {
@@ -398,6 +489,22 @@ button[disabled] {
 
   .metrics-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .ai-summary-grid,
+  .manual-input-grid,
+  .button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .manual-textarea {
+    grid-column: auto;
   }
 }
 

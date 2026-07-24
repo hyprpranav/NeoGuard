@@ -53,9 +53,48 @@
               <strong id="wifi-state">UNKNOWN</strong>
             </div>
             <div>
-              <span>Cloud Sync</span>
+              <span>Offline / Online</span>
               <strong id="cloud-state">WAITING</strong>
             </div>
+            <div>
+              <span>Last Sync</span>
+              <strong id="last-sync-time">Never</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-card glass-card reveal">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Edge AI</p>
+              <h2>NeoWarm Decision Engine</h2>
+            </div>
+            <p id="ai-state">Offline-ready</p>
+          </div>
+          <div class="ai-summary-grid">
+            <div>
+              <span>NeoWarm Health Score</span>
+              <strong id="health-score">--/100</strong>
+            </div>
+            <div>
+              <span>Risk Indicator</span>
+              <strong id="risk-level">Normal</strong>
+            </div>
+            <div>
+              <span>Offline Queue</span>
+              <strong id="offline-queue">0</strong>
+            </div>
+            <div>
+              <span>Emergency Alert</span>
+              <strong id="emergency-state">CLEAR</strong>
+            </div>
+          </div>
+          <div class="ai-recommendation-card">
+            <div>
+              <span>AI Recommendation</span>
+              <strong id="ai-recommendation">Awaiting AI decision</strong>
+            </div>
+            <small id="ai-reason">Explainable reason will appear here once sensor fusion runs.</small>
           </div>
         </section>
 
@@ -85,6 +124,21 @@
             <strong id="pulse">--</strong>
             <small>Analog pulse backup</small>
           </article>
+          <article class="metric-card glass-card reveal">
+            <span>Heater Status</span>
+            <strong id="heater-status">OFF</strong>
+            <small>AI controlled warming output</small>
+          </article>
+          <article class="metric-card glass-card reveal">
+            <span>Relay Status</span>
+            <strong id="relay-status">DISABLED</strong>
+            <small>Safety relay protection state</small>
+          </article>
+          <article class="metric-card glass-card reveal accent">
+            <span>Emergency Alert Card</span>
+            <strong id="emergency-card">CLEAR</strong>
+            <small>Shows sensor failure, overheating, or abnormal vitals</small>
+          </article>
         </section>
 
         <section class="controls-card glass-card reveal">
@@ -94,6 +148,39 @@
               <h2>Manual Actions</h2>
             </div>
             <p id="command-status">Ready</p>
+          </div>
+
+          <div class="manual-inputs">
+            <div class="manual-input-grid">
+              <label>
+                <span>Birth Weight</span>
+                <input id="birth-weight" type="number" min="0.5" max="6" step="0.1" placeholder="2.8 kg" />
+              </label>
+              <label>
+                <span>Gestational Age</span>
+                <input id="gestational-age" type="number" min="20" max="44" step="1" placeholder="38 weeks" />
+              </label>
+              <label>
+                <span>Feeding Interval</span>
+                <input id="feeding-interval" type="number" min="15" max="360" step="5" placeholder="180 mins" />
+              </label>
+              <label>
+                <span>Sleep Duration</span>
+                <input id="sleep-duration" type="number" min="0" max="24" step="1" placeholder="16 hours" />
+              </label>
+              <label>
+                <span>Vaccination Status</span>
+                <input id="vaccination-status" type="text" placeholder="Up to date" />
+              </label>
+              <label class="manual-textarea">
+                <span>Symptoms</span>
+                <textarea id="symptoms" rows="3" placeholder="None"></textarea>
+              </label>
+            </div>
+            <div class="button-row manual-actions">
+              <button id="save-profile-btn" type="button">Save AI Inputs</button>
+              <button id="reset-profile-btn" type="button" class="secondary">Reset</button>
+            </div>
           </div>
 
           <div class="control-group">

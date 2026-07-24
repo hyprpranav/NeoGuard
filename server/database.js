@@ -23,6 +23,22 @@ let latestCache = {
   safetyRelayOn: false,
   safetyCondition: 'Awaiting device data',
   sensorFault: false,
+  healthScore: null,
+  riskLevel: 'Normal',
+  recommendation: 'Awaiting device data',
+  reason: 'Awaiting device data',
+  stateName: 'BOOT',
+  emergencyAlert: false,
+  lastSyncAt: null,
+  offlineLogCount: 0,
+  manualProfile: {
+    birthWeightKg: null,
+    gestationalAgeWeeks: null,
+    feedingIntervalMinutes: null,
+    sleepDurationHours: null,
+    vaccinationStatus: '',
+    symptoms: '',
+  },
   capturedAt: null,
 };
 
@@ -76,6 +92,15 @@ async function initializeDatabase() {
         safety_relay_on TINYINT(1) NOT NULL DEFAULT 1,
         safety_condition VARCHAR(128) NOT NULL,
         sensor_fault TINYINT(1) NOT NULL DEFAULT 0,
+        health_score DECIMAL(5,2) NULL,
+        risk_level VARCHAR(16) NULL,
+        recommendation VARCHAR(255) NULL,
+        reason_text VARCHAR(255) NULL,
+        state_name VARCHAR(32) NULL,
+        emergency_alert TINYINT(1) NOT NULL DEFAULT 0,
+        manual_profile_json TEXT NULL,
+        last_sync_at VARCHAR(64) NULL,
+        offline_log_count INT NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -90,6 +115,8 @@ async function initializeDatabase() {
 }
 
 function normalizeReading(payload) {
+  const manualProfile = payload.manualProfile || {};
+
   latestCache = {
     deviceIp: payload.deviceIp || configuredDeviceIp || latestCache.deviceIp,
     babyTemp: payload.babyTemp ?? latestCache.babyTemp,
@@ -102,6 +129,22 @@ function normalizeReading(payload) {
     safetyRelayOn: Boolean(payload.safetyRelayOn),
     safetyCondition: payload.safetyCondition || latestCache.safetyCondition,
     sensorFault: Boolean(payload.sensorFault),
+    healthScore: payload.healthScore ?? latestCache.healthScore,
+    riskLevel: payload.riskLevel || latestCache.riskLevel,
+    recommendation: payload.recommendation || latestCache.recommendation,
+    reason: payload.reason || latestCache.reason,
+    stateName: payload.stateName || latestCache.stateName,
+    emergencyAlert: Boolean(payload.emergencyAlert),
+    lastSyncAt: payload.lastSyncAt || latestCache.lastSyncAt,
+    offlineLogCount: Number(payload.offlineLogCount ?? latestCache.offlineLogCount ?? 0),
+    manualProfile: {
+      birthWeightKg: manualProfile.birthWeightKg ?? latestCache.manualProfile.birthWeightKg,
+      gestationalAgeWeeks: manualProfile.gestationalAgeWeeks ?? latestCache.manualProfile.gestationalAgeWeeks,
+      feedingIntervalMinutes: manualProfile.feedingIntervalMinutes ?? latestCache.manualProfile.feedingIntervalMinutes,
+      sleepDurationHours: manualProfile.sleepDurationHours ?? latestCache.manualProfile.sleepDurationHours,
+      vaccinationStatus: manualProfile.vaccinationStatus ?? latestCache.manualProfile.vaccinationStatus,
+      symptoms: manualProfile.symptoms ?? latestCache.manualProfile.symptoms,
+    },
     capturedAt: payload.capturedAt || new Date().toISOString(),
   };
 
@@ -129,36 +172,58 @@ async function saveReading(payload) {
     return normalized;
   }
 
-  await pool.execute(
-    `
-      INSERT INTO neonatal_readings (
-        device_ip,
-        baby_temp,
-        env_temp,
-        spo2,
-        heart_rate,
-        pulse,
-        heater_on,
-        uv_on,
-        safety_relay_on,
-        safety_condition,
-        sensor_fault
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,
-    [
-      normalized.deviceIp,
-      normalized.babyTemp,
-      normalized.envTemp,
-      normalized.spo2,
-      normalized.heartRate,
-      normalized.pulse,
-      normalized.heaterOn,
-      normalized.uvOn,
-      normalized.safetyRelayOn,
-      normalized.safetyCondition,
-      normalized.sensorFault,
-    ]
-  );
+  try {
+    await pool.execute(
+      `
+        INSERT INTO neonatal_readings (
+          device_ip,
+          baby_temp,
+          env_temp,
+          spo2,
+          heart_rate,
+          pulse,
+          heater_on,
+          uv_on,
+          safety_relay_on,
+          safety_condition,
+          sensor_fault,
+          health_score,
+          risk_level,
+          recommendation,
+          reason_text,
+          state_name,
+          emergency_alert,
+          manual_profile_json,
+          last_sync_at,
+          offline_log_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        normalized.deviceIp,
+        normalized.babyTemp,
+        normalized.envTemp,
+        normalized.spo2,
+        normalized.heartRate,
+        normalized.pulse,
+        normalized.heaterOn,
+        normalized.uvOn,
+        normalized.safetyRelayOn,
+        normalized.safetyCondition,
+        normalized.sensorFault,
+        normalized.healthScore,
+        normalized.riskLevel,
+        normalized.recommendation,
+        normalized.reason,
+        normalized.stateName,
+        normalized.emergencyAlert,
+        JSON.stringify(normalized.manualProfile),
+        normalized.lastSyncAt,
+        normalized.offlineLogCount,
+      ]
+    );
+  } catch (error) {
+    console.warn('Skipping MySQL insert for extended NeoWarm payload:', error.message);
+  }
 
   return normalized;
 }
@@ -181,6 +246,15 @@ async function getLatestReading() {
       safety_relay_on AS safetyRelayOn,
       safety_condition AS safetyCondition,
       sensor_fault AS sensorFault,
+      health_score AS healthScore,
+      risk_level AS riskLevel,
+      recommendation,
+      reason_text AS reason,
+      state_name AS stateName,
+      emergency_alert AS emergencyAlert,
+      manual_profile_json AS manualProfileJson,
+      last_sync_at AS lastSyncAt,
+      offline_log_count AS offlineLogCount,
       created_at AS capturedAt
     FROM neonatal_readings
     ORDER BY id DESC
@@ -191,7 +265,16 @@ async function getLatestReading() {
     return latestCache;
   }
 
-  return normalizeReading(rows[0]);
+  const row = rows[0];
+  if (row.manualProfileJson) {
+    try {
+      row.manualProfile = JSON.parse(row.manualProfileJson);
+    } catch (_error) {
+      row.manualProfile = latestCache.manualProfile;
+    }
+  }
+
+  return normalizeReading(row);
 }
 
 function isDatabaseReady() {

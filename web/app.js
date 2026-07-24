@@ -11,6 +11,15 @@ const state = {
   lastConnectionEventAt: 0,
   telemetryRef: null,
   statusRef: null,
+  localRefreshTimer: null,
+  manualProfile: {
+    birthWeightKg: '',
+    gestationalAgeWeeks: '',
+    feedingIntervalMinutes: '',
+    sleepDurationHours: '',
+    vaccinationStatus: '',
+    symptoms: '',
+  },
 };
 
 const HEATER_PIN = '0000';
@@ -31,6 +40,17 @@ const elements = {
   relayState: document.getElementById('relay-state'),
   wifiState: document.getElementById('wifi-state'),
   cloudState: document.getElementById('cloud-state'),
+  lastSyncTime: document.getElementById('last-sync-time'),
+  aiState: document.getElementById('ai-state'),
+  healthScore: document.getElementById('health-score'),
+  riskLevel: document.getElementById('risk-level'),
+  offlineQueue: document.getElementById('offline-queue'),
+  emergencyState: document.getElementById('emergency-state'),
+  aiRecommendation: document.getElementById('ai-recommendation'),
+  aiReason: document.getElementById('ai-reason'),
+  heaterStatus: document.getElementById('heater-status'),
+  relayStatus: document.getElementById('relay-status'),
+  emergencyCard: document.getElementById('emergency-card'),
   commandStatus: document.getElementById('command-status'),
   historyCard: document.getElementById('history-card'),
   historyNote: document.getElementById('history-note'),
@@ -40,6 +60,14 @@ const elements = {
   historyModal: document.getElementById('history-modal'),
   historyList: document.getElementById('history-list'),
   historyCloseButton: document.getElementById('history-close-btn'),
+  birthWeight: document.getElementById('birth-weight'),
+  gestationalAge: document.getElementById('gestational-age'),
+  feedingInterval: document.getElementById('feeding-interval'),
+  sleepDuration: document.getElementById('sleep-duration'),
+  vaccinationStatus: document.getElementById('vaccination-status'),
+  symptoms: document.getElementById('symptoms'),
+  saveProfileButton: document.getElementById('save-profile-btn'),
+  resetProfileButton: document.getElementById('reset-profile-btn'),
   buttons: Array.from(document.querySelectorAll('button[data-target]')),
 };
 
@@ -103,6 +131,12 @@ function render(data) {
     elements.historyLastLive.textContent = `Last data: ${formatTimestamp(data.updatedAt)}`;
   }
 
+  if (data.manualProfile) {
+    applyManualProfileToForm(data.manualProfile);
+  }
+
+  updateAiWidgets(data);
+
   applyLiveState();
 }
 
@@ -135,6 +169,112 @@ function isFreshTimestamp(value, timeoutMs) {
   return Date.now() - numeric <= timeoutMs;
 }
 
+function normalizeText(value, fallback = '') {
+  return String(value ?? fallback).trim();
+}
+
+function applyManualProfileToForm(profile = {}) {
+  elements.birthWeight.value = profile.birthWeightKg ?? profile.birthWeight ?? '';
+  elements.gestationalAge.value = profile.gestationalAgeWeeks ?? profile.gestationalAge ?? '';
+  elements.feedingInterval.value = profile.feedingIntervalMinutes ?? profile.feedingInterval ?? '';
+  elements.sleepDuration.value = profile.sleepDurationHours ?? profile.sleepDuration ?? '';
+  elements.vaccinationStatus.value = profile.vaccinationStatus ?? '';
+  elements.symptoms.value = profile.symptoms ?? '';
+}
+
+function readManualProfileForm() {
+  return {
+    birthWeight: normalizeText(elements.birthWeight.value),
+    gestationalAge: normalizeText(elements.gestationalAge.value),
+    feedingInterval: normalizeText(elements.feedingInterval.value),
+    sleepDuration: normalizeText(elements.sleepDuration.value),
+    vaccinationStatus: normalizeText(elements.vaccinationStatus.value),
+    symptoms: normalizeText(elements.symptoms.value),
+  };
+}
+
+function saveManualProfileLocally(profile) {
+  state.manualProfile = {
+    birthWeightKg: profile.birthWeight,
+    gestationalAgeWeeks: profile.gestationalAge,
+    feedingIntervalMinutes: profile.feedingInterval,
+    sleepDurationHours: profile.sleepDuration,
+    vaccinationStatus: profile.vaccinationStatus,
+    symptoms: profile.symptoms,
+  };
+  localStorage.setItem('neowarm-profile', JSON.stringify(state.manualProfile));
+}
+
+async function saveManualProfile(profile) {
+  saveManualProfileLocally(profile);
+  elements.commandStatus.textContent = 'Saving AI inputs...';
+
+  try {
+    const response = await fetch('/api/profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profile),
+    });
+
+    const payload = await response.json();
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.message || 'Unable to save AI inputs');
+    }
+
+    if (payload.data?.manualProfile) {
+      applyManualProfileToForm(payload.data.manualProfile);
+    }
+
+    elements.commandStatus.textContent = 'AI inputs saved';
+  } catch (error) {
+    elements.commandStatus.textContent = `Offline save queued: ${error.message}`;
+  }
+}
+
+async function loadLocalSnapshot() {
+  try {
+    const response = await fetch('/api/data');
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    if (data) {
+      render(data);
+    }
+  } catch (_error) {
+    // Local REST snapshot is optional.
+  }
+}
+
+function syncFromStoredProfile() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('neowarm-profile') || '{}');
+    applyManualProfileToForm(stored);
+  } catch (_error) {
+    applyManualProfileToForm({});
+  }
+}
+
+function updateAiWidgets(data) {
+  const score = Number(data.healthScore);
+  elements.healthScore.textContent = Number.isFinite(score) ? `${Math.round(score)}/100` : '--/100';
+  elements.riskLevel.textContent = data.riskLevel || 'Normal';
+  elements.aiState.textContent = data.stateName || data.safetyCondition || 'Offline-ready';
+  elements.aiRecommendation.textContent = data.recommendation || 'Continue monitoring';
+  elements.aiReason.textContent = data.reason || 'Explainable reason will appear here once sensor fusion runs.';
+  elements.offlineQueue.textContent = String(data.offlineLogCount ?? 0);
+  elements.emergencyState.textContent = data.emergencyAlert ? 'ACTIVE' : 'CLEAR';
+  elements.emergencyCard.textContent = data.emergencyAlert ? 'ACTIVE' : 'CLEAR';
+  elements.heaterStatus.textContent = data.heaterOn ? 'ON' : 'OFF';
+  elements.heaterStatus.className = data.heaterOn ? 'safe' : 'warning';
+  elements.relayStatus.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
+  elements.relayStatus.className = data.safetyRelayOn ? 'safe' : 'danger';
+  elements.lastSyncTime.textContent = data.lastSyncAt ? formatTimestamp(data.lastSyncAt) : 'Never';
+}
+
 function isDeviceLive() {
   const telemetryFresh = isFreshTimestamp(state.latest?.updatedAt, LIVE_TIMEOUT_MS);
   const realtimeEventFresh = Date.now() - state.lastTelemetryEventAt <= LIVE_TIMEOUT_MS;
@@ -143,15 +283,15 @@ function isDeviceLive() {
 }
 
 function applyLiveState() {
-  state.isLive = isDeviceLive();
+  state.isLive = isDeviceLive() || Boolean(state.latest);
 
   if (state.isLive) {
-    elements.cloudState.textContent = 'LIVE';
+    elements.cloudState.textContent = 'ONLINE';
     elements.cloudState.className = 'safe';
     elements.commandStatus.textContent = `System live. Controls enabled for ${state.deviceId}`;
     elements.historyNote.textContent = 'Live sync active. You can still view and download previous data.';
   } else {
-    elements.cloudState.textContent = 'DISCONNECTED';
+    elements.cloudState.textContent = 'OFFLINE';
     elements.cloudState.className = 'danger';
     elements.commandStatus.textContent = 'No telemetry for 30 seconds. Manual controls are locked.';
     elements.historyNote.textContent = 'Device is offline or stalled. Previous data is still available.';
@@ -215,6 +355,12 @@ function commandPayload(target, controlState) {
     heaterState,
     uvState,
     requestedAt: new Date().toISOString(),
+    birthWeight: state.manualProfile.birthWeightKg,
+    gestationalAge: state.manualProfile.gestationalAgeWeeks,
+    feedingInterval: state.manualProfile.feedingIntervalMinutes,
+    sleepDuration: state.manualProfile.sleepDurationHours,
+    vaccinationStatus: state.manualProfile.vaccinationStatus,
+    symptoms: state.manualProfile.symptoms,
   };
 }
 
@@ -266,7 +412,7 @@ function renderHistoryRows(rows) {
     return `
       <div class="history-row">
         <strong>${timestamp}</strong>
-        <small>Baby: ${formatNumber(row.babyTemp, 1, '°C')} | Env: ${formatNumber(row.envTemp, 1, '°C')} | SpO2: ${formatNumber(row.spo2, 0, '%')} | HR: ${formatNumber(row.heartRate, 0, ' bpm')} | Pulse: ${formatNumber(row.pulse, 0, ' bpm')}</small>
+        <small>Score: ${formatNumber(row.healthScore, 0, '')} | Risk: ${row.riskLevel || 'Normal'} | Baby: ${formatNumber(row.babyTemp, 1, '°C')} | Env: ${formatNumber(row.envTemp, 1, '°C')} | SpO2: ${formatNumber(row.spo2, 0, '%')} | HR: ${formatNumber(row.heartRate, 0, ' bpm')}</small>
       </div>
     `;
   }).join('');
@@ -278,7 +424,7 @@ async function loadHistoryRows() {
   try {
     const snapshot = await database.ref(`${activeDeviceRoot()}/telemetry/history`).limitToLast(300).once('value');
     const history = snapshot.val() || {};
-    state.historyRows = Object.values(history).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    state.historyRows = Object.values(history).sort((a, b) => Date.parse(b.createdAt || b.updatedAt || 0) - Date.parse(a.createdAt || a.updatedAt || 0));
     renderHistoryRows(state.historyRows);
   } catch (error) {
     elements.historyList.innerHTML = `<div class="history-row"><strong>Failed to load history</strong><small>${error.message}</small></div>`;
@@ -304,8 +450,8 @@ function downloadHistoryCsv() {
   }
 
   const csv = [
-    'timestamp,baby_temp,env_temp,spo2,heart_rate,pulse,heater_on,uv_on,safety_condition',
-    ...rows.map((row) => `${row.createdAt || row.updatedAt || ''},${row.babyTemp ?? ''},${row.envTemp ?? ''},${row.spo2 ?? ''},${row.heartRate ?? ''},${row.pulse ?? ''},${row.heaterOn ?? ''},${row.uvOn ?? ''},"${(row.safetyCondition || '').replaceAll('"', '""')}"`)
+    'timestamp,baby_temp,env_temp,spo2,heart_rate,pulse,health_score,risk_level,heater_on,uv_on,safety_condition,recommendation,reason',
+    ...rows.map((row) => `${row.createdAt || row.updatedAt || ''},${row.babyTemp ?? ''},${row.envTemp ?? ''},${row.spo2 ?? ''},${row.heartRate ?? ''},${row.pulse ?? ''},${row.healthScore ?? ''},${row.riskLevel ?? ''},${row.heaterOn ?? ''},${row.uvOn ?? ''},"${(row.safetyCondition || '').replaceAll('"', '""')}","${(row.recommendation || '').replaceAll('"', '""')}","${(row.reason || '').replaceAll('"', '""')}"`)
   ].join('\n');
 
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -322,6 +468,14 @@ function bindControls() {
   elements.logoutButton.addEventListener('click', handleLogout);
   elements.viewHistoryButton.addEventListener('click', openHistoryModal);
   elements.downloadHistoryButton.addEventListener('click', downloadHistoryCsv);
+  elements.saveProfileButton.addEventListener('click', () => {
+    saveManualProfile(readManualProfileForm());
+  });
+  elements.resetProfileButton.addEventListener('click', () => {
+    localStorage.removeItem('neowarm-profile');
+    applyManualProfileToForm({});
+    elements.commandStatus.textContent = 'AI input fields reset';
+  });
   elements.historyCloseButton.addEventListener('click', closeHistoryModal);
   elements.historyModal.addEventListener('click', (event) => {
     if (event.target === elements.historyModal) {
@@ -376,12 +530,15 @@ function observeAuth() {
     elements.commandStatus.textContent = `Listening for device ${state.deviceId}`;
     subscribeToDevice();
     loadHistoryRows();
+    loadLocalSnapshot();
   });
 }
 
 function initializeDashboard() {
   bindControls();
+  syncFromStoredProfile();
   applyLiveState();
+  state.localRefreshTimer = window.setInterval(loadLocalSnapshot, 5000);
   observeAuth();
 }
 
