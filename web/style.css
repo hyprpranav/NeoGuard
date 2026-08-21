@@ -216,7 +216,6 @@ select {
   margin-top: 10px;
   font-size: clamp(1rem, 4vw, 1.7rem);
   line-height: 1.1;
-  overflow-wrap: anywhere;
 }
 
 .ai-recommendation-card {
@@ -255,8 +254,6 @@ select {
   margin-top: 10px;
   font-size: clamp(1.1rem, 4vw, 2rem);
   line-height: 1.05;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .metrics-grid {

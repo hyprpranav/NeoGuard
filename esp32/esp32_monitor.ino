@@ -70,7 +70,7 @@ void onBeatDetected() {
 
 void setHeater(bool enabled) {
   heaterOn = enabled;
-  digitalWrite(HEATER_RELAY_PIN, enabled ? HIGH : LOW);
+  digitalWrite(HEATER_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 void setUv(bool enabled) {
@@ -167,7 +167,6 @@ void applyDecision(const DecisionResult& decision) {
   if (decision.emergency || decision.sensorFault) {
     emergencyAlertActive = true;
     setHeater(false); 
-    setUv(false);
     return;
   }
 
