@@ -22,10 +22,11 @@
         </div>
         <div class="device-connect-panel">
           <label class="device-input-group" for="device-id-input">
-            <span>Active Device</span>
-            <input id="device-id-input" type="text" placeholder="neoguard-one" readonly />
+            <span>Serial Connection</span>
+            <input id="device-id-input" type="text" placeholder="Connect to Port ->" readonly />
           </label>
-          <button id="logout-btn" type="button">Sign Out</button>
+          <button id="connect-serial-btn" type="button">Connect Port</button>
+          <button id="logout-btn" type="button" style="display: none;">Sign Out</button>
           <div class="device-pill">
             <span>User Email</span>
             <strong id="user-email">--</strong>
@@ -235,11 +236,6 @@
         </div>
       </div>
     </div>
-
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
-    <script src="/web/firebase-config.js"></script>
     <script src="/web/app.js"></script>
   </body>
 </html>
