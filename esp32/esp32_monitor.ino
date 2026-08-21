@@ -71,17 +71,17 @@ void onBeatDetected() {
 
 void setHeater(bool enabled) {
   heaterOn = enabled;
-  digitalWrite(HEATER_RELAY_PIN, enabled ? HIGH : LOW);
+  digitalWrite(HEATER_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 void setUv(bool enabled) {
   uvOn = enabled;
-  digitalWrite(UV_RELAY_PIN, enabled ? HIGH : LOW);
+  digitalWrite(UV_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 void setSafetyRelay(bool enabled) {
   safetyRelayOn = enabled;
-  digitalWrite(SAFETY_RELAY_PIN, enabled ? HIGH : LOW);
+  digitalWrite(SAFETY_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 String boolJson(bool value) {
@@ -338,6 +338,11 @@ void readSensors() {
 void setup() {
   Serial.begin(115200);
 
+  // Pre-load pins to HIGH (OFF for Active-LOW relays) to prevent boot clicking
+  digitalWrite(HEATER_RELAY_PIN, HIGH);
+  digitalWrite(UV_RELAY_PIN, HIGH);
+  digitalWrite(SAFETY_RELAY_PIN, LOW); // Note: we want safety relay ON (LOW) by default? Actually we just call setSafetyRelay(true) right away
+  
   pinMode(HEATER_RELAY_PIN, OUTPUT);
   pinMode(UV_RELAY_PIN, OUTPUT);
   pinMode(SAFETY_RELAY_PIN, OUTPUT);
