@@ -1,241 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeoGuard Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/web/style.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <header class="app-header glass-card reveal">
-        <div>
-          <p class="eyebrow">Smart Neonatal Monitoring Cloth System</p>
-          <h1>NeoGuard</h1>
-          <p class="eyebrow" id="user-name">Welcome</p>
-        </div>
-        <div class="device-connect-panel">
-          <label class="device-input-group" for="device-id-input">
-            <span>Serial Connection</span>
-            <input id="device-id-input" type="text" placeholder="Connect to Port ->" readonly />
-          </label>
-          <button id="connect-serial-btn" type="button">Connect Port</button>
-          <button id="logout-btn" type="button" style="display: none;">Sign Out</button>
-          <div class="device-pill">
-            <span>User Email</span>
-            <strong id="user-email">--</strong>
-          </div>
-        </div>
-      </header>
 
-      <main class="dashboard-grid">
-        <section class="hero-card glass-card reveal">
-          <div>
-            <p class="eyebrow">Live Safety Overview</p>
-            <h2 id="safety-condition">Awaiting device data</h2>
-          </div>
-          <div class="hero-statuses">
-            <div>
-              <span>Heater</span>
-              <strong id="heater-state">OFF</strong>
-            </div>
-            <div>
-              <span>Safety Relay</span>
-              <strong id="relay-state">OFF</strong>
-            </div>
-            <div>
-              <span>Wi-Fi</span>
-              <strong id="wifi-state">UNKNOWN</strong>
-            </div>
-            <div>
-              <span>Offline / Online</span>
-              <strong id="cloud-state">WAITING</strong>
-            </div>
-            <div>
-              <span>Last Sync</span>
-              <strong id="last-sync-time">Never</strong>
-            </div>
-          </div>
-        </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoGuard Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/web/style.css" />
+</head>
 
-        <section class="ai-card glass-card reveal">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Edge AI</p>
-              <h2>NeoWarm Decision Engine</h2>
-            </div>
-            <p id="ai-state">Offline-ready</p>
-          </div>
-          <div class="ai-summary-grid">
-            <div>
-              <span>NeoWarm Health Score</span>
-              <strong id="health-score">--/100</strong>
-            </div>
-            <div>
-              <span>Risk Indicator</span>
-              <strong id="risk-level">Normal</strong>
-            </div>
-            <div>
-              <span>Offline Queue</span>
-              <strong id="offline-queue">0</strong>
-            </div>
-            <div>
-              <span>Emergency Alert</span>
-              <strong id="emergency-state">CLEAR</strong>
-            </div>
-          </div>
-          <div class="ai-recommendation-card">
-            <div>
-              <span>AI Recommendation</span>
-              <strong id="ai-recommendation">Awaiting AI decision</strong>
-            </div>
-            <small id="ai-reason">Explainable reason will appear here once sensor fusion runs.</small>
-          </div>
-        </section>
-
-        <section class="metrics-grid">
-          <article class="metric-card glass-card reveal">
-            <span>Baby Temp</span>
-            <strong id="baby-temp">--.-</strong>
-            <small>Target 36.5 to 37.5 degrees C</small>
-          </article>
-          <article class="metric-card glass-card reveal">
-            <span>SpO2</span>
-            <strong id="spo2">--</strong>
-            <small>Peripheral oxygen saturation</small>
-          </article>
-          <article class="metric-card glass-card reveal">
-            <span>Heart Rate</span>
-            <strong id="heart-rate">--</strong>
-            <small>Beats per minute</small>
-          </article>
-          <article class="metric-card glass-card reveal">
-            <span>Env Temp</span>
-            <strong id="env-temp">--.-</strong>
-            <small>Incubator cloth environment</small>
-          </article>
-          <article class="metric-card glass-card reveal accent">
-            <span>Pulse Sensor</span>
-            <strong id="pulse">--</strong>
-            <small>Analog pulse backup</small>
-          </article>
-          <article class="metric-card glass-card reveal">
-            <span>Heater Status</span>
-            <strong id="heater-status">OFF</strong>
-            <small>AI controlled warming output</small>
-          </article>
-          <article class="metric-card glass-card reveal">
-            <span>Relay Status</span>
-            <strong id="relay-status">DISABLED</strong>
-            <small>Safety relay protection state</small>
-          </article>
-          <article class="metric-card glass-card reveal accent">
-            <span>Emergency Alert Card</span>
-            <strong id="emergency-card">CLEAR</strong>
-            <small>Shows sensor failure, overheating, or abnormal vitals</small>
-          </article>
-        </section>
-
-        <section class="controls-card glass-card reveal">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Controls</p>
-              <h2>Manual Actions</h2>
-            </div>
-            <p id="command-status">Ready</p>
-          </div>
-
-          <div class="manual-inputs">
-            <div class="manual-input-grid">
-              <label>
-                <span>Birth Weight</span>
-                <input id="birth-weight" type="number" min="0.5" max="6" step="0.1" placeholder="2.8 kg" />
-              </label>
-              <label>
-                <span>Gestational Age</span>
-                <input id="gestational-age" type="number" min="20" max="44" step="1" placeholder="38 weeks" />
-              </label>
-              <label>
-                <span>Feeding Interval</span>
-                <input id="feeding-interval" type="number" min="15" max="360" step="5" placeholder="180 mins" />
-              </label>
-              <label>
-                <span>Sleep Duration</span>
-                <input id="sleep-duration" type="number" min="0" max="24" step="1" placeholder="16 hours" />
-              </label>
-              <label>
-                <span>Vaccination Status</span>
-                <input id="vaccination-status" type="text" placeholder="Up to date" />
-              </label>
-              <label class="manual-textarea">
-                <span>Symptoms</span>
-                <textarea id="symptoms" rows="3" placeholder="None"></textarea>
-              </label>
-            </div>
-            <div class="button-row manual-actions">
-              <button id="save-profile-btn" type="button">Save AI Inputs</button>
-              <button id="reset-profile-btn" type="button" class="secondary">Reset</button>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div>
-              <span>Heating Indicator</span>
-              <small>Manual override synced through Firebase</small>
-            </div>
-            <div class="button-row">
-              <button data-target="heater" data-state="on">Heater ON</button>
-              <button data-target="heater" data-state="off" class="secondary">Heater OFF</button>
-            </div>
-          </div>
-
-          <div class="control-group">
-            <div>
-              <span>UV Sterilization</span>
-              <small>Manual relay control synced through Firebase</small>
-            </div>
-            <div class="button-row">
-              <button data-target="uv" data-state="on">UV ON</button>
-              <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="history-card glass-card reveal" id="history-card">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Data History</p>
-              <h2>Previous Device Data</h2>
-            </div>
-            <p id="history-last-live">Waiting for first sync</p>
-          </div>
-          <p id="history-note">View the previous data when the system is on.</p>
-          <div class="button-row">
-            <button id="view-history-btn" type="button">View Previous Data</button>
-            <button id="download-history-btn" type="button" class="secondary">Download CSV</button>
-          </div>
-        </section>
-      </main>
-
-      <div class="history-modal" id="history-modal" aria-hidden="true">
-        <div class="history-modal-content glass-card">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">NeoGuard One</p>
-              <h2>Telemetry History</h2>
-            </div>
-            <button id="history-close-btn" type="button" class="secondary">Close</button>
-          </div>
-          <div class="history-list" id="history-list"></div>
+<body>
+  <div class="app-shell">
+    <header class="app-header glass-card reveal">
+      <div>
+        <p class="eyebrow">Smart Neonatal Monitoring Cloth System</p>
+        <h1>NeoGuard</h1>
+        <p class="eyebrow" id="user-name">Welcome</p>
+      </div>
+      <div class="device-connect-panel">
+        <label class="device-input-group" for="device-id-input">
+          <span>Serial Connection</span>
+          <input id="device-id-input" type="text" placeholder="Connect to Port ->" readonly />
+        </label>
+        <button id="connect-serial-btn" type="button">Connect Port</button>
+        <button id="logout-btn" type="button" style="display: none;">Sign Out</button>
+        <div class="device-pill">
+          <span>User Email</span>
+          <strong id="user-email">--</strong>
         </div>
       </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <section class="hero-card glass-card reveal">
+        <div>
+          <p class="eyebrow">Live Safety Overview</p>
+          <h2 id="safety-condition">Awaiting device data</h2>
+        </div>
+        <div class="hero-statuses">
+          <div>
+            <span>Heater</span>
+            <strong id="heater-state">OFF</strong>
+          </div>
+          <div>
+            <span>Safety Relay</span>
+            <strong id="relay-state">OFF</strong>
+          </div>
+          <div>
+            <span>Wi-Fi</span>
+            <strong id="wifi-state">UNKNOWN</strong>
+          </div>
+          <div>
+            <span>Offline / Online</span>
+            <strong id="cloud-state">WAITING</strong>
+          </div>
+          <div>
+            <span>Last Sync</span>
+            <strong id="last-sync-time">Never</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-card glass-card reveal">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Edge AI</p>
+            <h2>NeoWarm Decision Engine</h2>
+          </div>
+          <p id="ai-state">Offline-ready</p>
+        </div>
+        <div class="ai-summary-grid">
+          <div>
+            <span>NeoWarm Health Score</span>
+            <strong id="health-score">--/100</strong>
+          </div>
+          <div>
+            <span>Risk Indicator</span>
+            <strong id="risk-level">Normal</strong>
+          </div>
+          <div>
+            <span>Offline Queue</span>
+            <strong id="offline-queue">0</strong>
+          </div>
+          <div>
+            <span>Emergency Alert</span>
+            <strong id="emergency-state">CLEAR</strong>
+          </div>
+        </div>
+        <div class="ai-recommendation-card">
+          <div>
+            <span>AI Recommendation</span>
+            <strong id="ai-recommendation">Awaiting AI decision</strong>
+          </div>
+          <small id="ai-reason">Explainable reason will appear here once sensor fusion runs.</small>
+        </div>
+      </section>
+
+      <section class="metrics-grid">
+        <article class="metric-card glass-card reveal">
+          <span>Baby Temp</span>
+          <strong id="baby-temp">--.-</strong>
+          <small>Target 36.5 to 37.5 degrees C</small>
+        </article>
+        <article class="metric-card glass-card reveal">
+          <span>SpO2</span>
+          <strong id="spo2">--</strong>
+          <small>Peripheral oxygen saturation</small>
+        </article>
+        <article class="metric-card glass-card reveal">
+          <span>Heart Rate</span>
+          <strong id="heart-rate">--</strong>
+          <small>Beats per minute</small>
+        </article>
+        <article class="metric-card glass-card reveal">
+          <span>Env Temp</span>
+          <strong id="env-temp">--.-</strong>
+          <small>Incubator cloth environment</small>
+        </article>
+        <article class="metric-card glass-card reveal accent">
+          <span>Pulse Sensor</span>
+          <strong id="pulse">--</strong>
+          <small>Analog pulse backup</small>
+        </article>
+        <article class="metric-card glass-card reveal">
+          <span>Heater Status</span>
+          <strong id="heater-status">OFF</strong>
+          <small>AI controlled warming output</small>
+        </article>
+        <article class="metric-card glass-card reveal">
+          <span>Relay Status</span>
+          <strong id="relay-status">DISABLED</strong>
+          <small>Safety relay protection state</small>
+        </article>
+        <article class="metric-card glass-card reveal accent">
+          <span>Emergency Alert Card</span>
+          <strong id="emergency-card">CLEAR</strong>
+          <small>Shows sensor failure, overheating, or abnormal vitals</small>
+        </article>
+      </section>
+
+      <section class="controls-card glass-card reveal">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Controls</p>
+            <h2>Manual Actions</h2>
+          </div>
+          <p id="command-status">Ready</p>
+        </div>
+
+        <div class="manual-inputs">
+          <div class="manual-input-grid">
+            <label>
+              <span>Birth Weight</span>
+              <input id="birth-weight" type="number" min="0.5" max="6" step="0.1" placeholder="2.8 kg" />
+            </label>
+            <label>
+              <span>Gestational Age</span>
+              <input id="gestational-age" type="number" min="20" max="44" step="1" placeholder="38 weeks" />
+            </label>
+            <label>
+              <span>Feeding Interval</span>
+              <input id="feeding-interval" type="number" min="15" max="360" step="5" placeholder="180 mins" />
+            </label>
+            <label>
+              <span>Sleep Duration</span>
+              <input id="sleep-duration" type="number" min="0" max="24" step="1" placeholder="16 hours" />
+            </label>
+            <label>
+              <span>Vaccination Status</span>
+              <input id="vaccination-status" type="text" placeholder="Up to date" />
+            </label>
+            <label class="manual-textarea">
+              <span>Symptoms</span>
+              <textarea id="symptoms" rows="3" placeholder="None"></textarea>
+            </label>
+          </div>
+          <div class="button-row manual-actions">
+            <button id="save-profile-btn" type="button">Save AI Inputs</button>
+            <button id="reset-profile-btn" type="button" class="secondary">Reset</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div>
+            <span>Heating Pad Control</span>
+            <small id="heater-mode-status">Mode: Manual</small>
+          </div>
+          <div class="button-row">
+            <button data-target="heater" data-state="auto">Auto Mode</button>
+            <button data-target="heater" data-state="on" class="secondary">Manual ON</button>
+            <button data-target="heater" data-state="off" class="secondary">Manual OFF</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div>
+            <span>UV Sterilization</span>
+            <small>Manual relay control synced through Firebase</small>
+          </div>
+          <div class="button-row">
+            <button data-target="uv" data-state="on">UV ON</button>
+            <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-card glass-card reveal" id="history-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Data History</p>
+            <h2>Previous Device Data</h2>
+          </div>
+          <p id="history-last-live">Waiting for first sync</p>
+        </div>
+        <p id="history-note">View the previous data when the system is on.</p>
+        <div class="button-row">
+          <button id="view-history-btn" type="button">View Previous Data</button>
+          <button id="download-history-btn" type="button" class="secondary">Download CSV</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="history-modal" id="history-modal" aria-hidden="true">
+      <div class="history-modal-content glass-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">NeoGuard One</p>
+            <h2>Telemetry History</h2>
+          </div>
+          <button id="history-close-btn" type="button" class="secondary">Close</button>
+        </div>
+        <div class="history-list" id="history-list"></div>
+      </div>
     </div>
-    <script src="/web/app.js"></script>
-  </body>
+  </div>
+  <script src="/web/app.js"></script>
+</body>
+
 </html>

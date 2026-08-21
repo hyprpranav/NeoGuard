@@ -39,6 +39,7 @@ const elements = {
   aiRecommendation: document.getElementById('ai-recommendation'),
   aiReason: document.getElementById('ai-reason'),
   heaterStatus: document.getElementById('heater-status'),
+  heaterModeStatus: document.getElementById('heater-mode-status'),
   relayStatus: document.getElementById('relay-status'),
   emergencyCard: document.getElementById('emergency-card'),
   commandStatus: document.getElementById('command-status'),
@@ -85,18 +86,21 @@ function render(data) {
   elements.spo2.textContent = formatNumber(data.spo2, 0, '%');
   elements.heartRate.textContent = formatNumber(data.heartRate, 0, ' bpm');
   elements.pulse.textContent = formatNumber(data.pulse, 0, ' bpm');
-  
+
   const sensorDataAvailable = data.babyTempValid || data.envTempValid || data.spo2Valid || data.heartRateValid;
-  if (!sensorDataAvailable && (data.babyTemp===undefined || data.babyTemp===0)) {
+  if (!sensorDataAvailable && (data.babyTemp === undefined || data.babyTemp === 0)) {
     elements.safetyCondition.textContent = 'Sensor data failed';
     elements.safetyCondition.className = 'danger';
   } else {
     elements.safetyCondition.textContent = data.stateName || 'Active';
     elements.safetyCondition.className = applySafetyClass(data.stateName);
   }
-  
+
   elements.heaterState.textContent = data.heaterOn ? 'ON' : 'OFF';
   elements.heaterState.className = data.heaterOn ? 'safe' : 'warning';
+  if (elements.heaterModeStatus) {
+    elements.heaterModeStatus.textContent = data.heaterAutoMode ? 'Mode: Auto' : 'Mode: Manual';
+  }
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
   elements.relayState.className = data.safetyRelayOn ? 'safe' : 'danger';
   elements.lastSyncTime.textContent = new Date().toLocaleTimeString();
@@ -115,7 +119,7 @@ function updateAiWidgets(data) {
   elements.offlineQueue.textContent = '0 (Serial)';
   elements.emergencyState.textContent = data.emergencyAlert ? 'ACTIVE' : 'CLEAR';
   elements.emergencyCard.textContent = data.emergencyAlert ? 'ACTIVE' : 'CLEAR';
-  
+
   elements.heaterStatus.textContent = data.heaterOn ? 'ON' : 'OFF';
   elements.heaterStatus.className = data.heaterOn ? 'safe' : 'warning';
   elements.relayStatus.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
@@ -153,7 +157,7 @@ async function connectSerial() {
     encoder.readable.pipeTo(port.writable);
 
     elements.deviceId.value = 'SERIAL PORT ACTIVE';
-    if(elements.connectSerialBtn) {
+    if (elements.connectSerialBtn) {
       elements.connectSerialBtn.textContent = 'Connected';
       elements.connectSerialBtn.disabled = true;
     }
@@ -172,23 +176,23 @@ async function readLoop() {
   const decoder = new TextDecoderStream();
   port.readable.pipeTo(decoder.writable);
   reader = decoder.readable.getReader();
-  
+
   let partialLine = '';
   try {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      
+
       partialLine += value;
       let lines = partialLine.split('\n');
-      partialLine = lines.pop(); 
-      
+      partialLine = lines.pop();
+
       for (const line of lines) {
         if (line.trim().startsWith('{')) {
           try {
             const data = JSON.parse(line.trim());
             render(data);
-          } catch(e) {
+          } catch (e) {
             console.warn('JSON Parse error on serial data:', e, 'Line:', line);
           }
         }
@@ -206,19 +210,29 @@ async function sendCommand(target, controlState) {
     elements.commandStatus.textContent = 'Port not connected';
     return;
   }
-  
-  if (target === 'heater' && controlState === 'on') {
-    const pin = window.prompt('Enter 4-digit heater safety PIN (Hint 0000)');
-    if (pin !== HEATER_PIN) {
-      elements.commandStatus.textContent = 'Invalid PIN. Heater ON cancelled.';
-      return;
-    }
-  }
 
   elements.commandStatus.textContent = `Sending ${target} ${controlState}...`;
-  
+
   try {
-    const payload = JSON.stringify({ [target + 'On']: controlState === 'on' }) + '\n';
+    let payload;
+    if (target === 'heater') {
+      if (controlState === 'auto') {
+        payload = JSON.stringify({ heaterAutoMode: true }) + '\n';
+      } else {
+        const isOn = controlState === 'on';
+        if (isOn) {
+          const pin = window.prompt('Enter 4-digit heater safety PIN (Hint 0000)');
+          if (pin !== HEATER_PIN) {
+            elements.commandStatus.textContent = 'Invalid PIN. Heater ON cancelled.';
+            return;
+          }
+        }
+        payload = JSON.stringify({ heaterAutoMode: false, heaterOn: isOn }) + '\n';
+      }
+    } else {
+      payload = JSON.stringify({ [target + 'On']: controlState === 'on' }) + '\n';
+    }
+
     await outputStream.write(payload);
     elements.commandStatus.textContent = `${target.toUpperCase()} ${controlState.toUpperCase()} sent to ESP32`;
   } catch (error) {
@@ -248,10 +262,10 @@ function readManualProfileForm() {
 }
 
 function bindControls() {
-  if(elements.connectSerialBtn) {
+  if (elements.connectSerialBtn) {
     elements.connectSerialBtn.addEventListener('click', connectSerial);
   }
-  
+
   elements.buttons.forEach((button) => {
     button.addEventListener('click', () => {
       sendCommand(button.dataset.target, button.dataset.state);
@@ -273,11 +287,11 @@ function bindControls() {
 
 function initializeDashboard() {
   bindControls();
-  
+
   try {
     const stored = JSON.parse(localStorage.getItem('neowarm-profile-serial') || '{}');
     applyManualProfileToForm(stored);
-  } catch (e) {}
+  } catch (e) { }
 
   applyLiveState();
   elements.userName.textContent = 'Welcome, Local User';

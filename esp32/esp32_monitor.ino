@@ -47,6 +47,7 @@ unsigned long lastSerialReport = 0;
 unsigned long lastMax30100Report = 0;
 
 bool heaterOn = false;
+bool heaterAutoMode = false;
 bool uvOn = false;
 bool safetyRelayOn = true;
 
@@ -175,12 +176,14 @@ void applyDecision(const DecisionResult& decision) {
   // Power supply relay MUST always remain ON for sensors
   setSafetyRelay(true);
 
-  if (decision.heatingRequired) {
-    setHeater(true);
-  } else if (decision.coolingRequired) {
-    setHeater(false);
-  } else {
-    setHeater(false);
+  if (heaterAutoMode) {
+    if (decision.heatingRequired) {
+      setHeater(true);
+    } else if (decision.coolingRequired) {
+      setHeater(false);
+    } else {
+      setHeater(false);
+    }
   }
 }
 
@@ -209,6 +212,7 @@ void sendSerialData() {
   payload += "\"stateName\":\"" + currentDecision.stateName + "\",";
   payload += "\"emergencyAlert\":" + boolJson(emergencyAlertActive) + ",";
   payload += "\"heaterOn\":" + boolJson(heaterOn) + ",";
+  payload += "\"heaterAutoMode\":" + boolJson(heaterAutoMode) + ",";
   payload += "\"uvOn\":" + boolJson(uvOn) + ",";
   payload += "\"safetyRelayOn\":" + boolJson(safetyRelayOn);
   payload += "}";
@@ -223,10 +227,16 @@ void handleSerialCommands() {
     line.trim();
     if (line.length() > 0) {
       // Basic JSON string parsing to check overriding commands from dashboard
+      if (line.indexOf("\"heaterAutoMode\":true") >= 0) {
+        heaterAutoMode = true;
+      } else if (line.indexOf("\"heaterAutoMode\":false") >= 0) {
+        heaterAutoMode = false;
+      }
+
       if (line.indexOf("\"heaterOn\":true") >= 0) {
-        setHeater(true);
+        if (!heaterAutoMode) setHeater(true);
       } else if (line.indexOf("\"heaterOn\":false") >= 0) {
-        setHeater(false);
+        if (!heaterAutoMode) setHeater(false);
       }
       
       if (line.indexOf("\"uvOn\":true") >= 0) {
