@@ -208,14 +208,21 @@ select {
 .ai-summary-grid div {
   padding: 14px;
   border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 80px;
 }
 
 .ai-summary-grid strong,
 .ai-recommendation-card strong {
   display: block;
-  margin-top: 10px;
-  font-size: clamp(1rem, 4vw, 1.7rem);
-  line-height: 1.1;
+  margin-top: auto;
+  margin-bottom: auto;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  line-height: 1.15;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .ai-recommendation-card {
@@ -246,14 +253,21 @@ select {
 .hero-statuses div {
   padding: 14px;
   border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .hero-statuses strong,
 .metric-card strong {
   display: block;
-  margin-top: 10px;
-  font-size: clamp(1.1rem, 4vw, 2rem);
-  line-height: 1.05;
+  margin-top: auto;
+  margin-bottom: auto;
+  font-size: clamp(1.1rem, 3.5vw, 1.8rem);
+  line-height: 1.1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .metrics-grid {
@@ -265,6 +279,9 @@ select {
 .metric-card {
   padding: 18px;
   border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .metric-card.accent {
@@ -391,7 +408,7 @@ select {
   padding: 16px;
 }
 
-.control-group + .control-group {
+.control-group+.control-group {
   margin-top: 14px;
 }
 
@@ -485,11 +502,12 @@ button[disabled] {
   }
 
   .metrics-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 767px) {
+
   .ai-summary-grid,
   .manual-input-grid,
   .button-row {
