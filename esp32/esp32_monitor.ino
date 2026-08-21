@@ -71,17 +71,17 @@ void onBeatDetected() {
 
 void setHeater(bool enabled) {
   heaterOn = enabled;
-  digitalWrite(HEATER_RELAY_PIN, enabled ? LOW : HIGH);
+  digitalWrite(HEATER_RELAY_PIN, enabled ? HIGH : LOW);
 }
 
 void setUv(bool enabled) {
   uvOn = enabled;
-  digitalWrite(UV_RELAY_PIN, enabled ? LOW : HIGH);
+  digitalWrite(UV_RELAY_PIN, enabled ? HIGH : LOW);
 }
 
 void setSafetyRelay(bool enabled) {
   safetyRelayOn = enabled;
-  digitalWrite(SAFETY_RELAY_PIN, enabled ? LOW : HIGH);
+  digitalWrite(SAFETY_RELAY_PIN, enabled ? HIGH : LOW);
 }
 
 String boolJson(bool value) {
