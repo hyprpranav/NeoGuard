@@ -72,7 +72,8 @@
 // =================================================================================
 DHT dht(DHT11_PIN, DHTTYPE);
 OneWire oneWire(DS18B20_PIN);
-DallasTemperature babySensor(&oneWire);
+DallasTemperature ds18b20(&oneWire);
+DallasTemperature& babySensor = ds18b20; // Reference alias so both ds18b20 and babySensor work seamlessly
 MAX30105 particleSensor;
 Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
 
@@ -316,8 +317,8 @@ void checkOpticalHeartRate() {
 // =================================================================================
 void readSensors() {
   // --- 1. Read DS18B20 Baby Temperature (Pin 4) ---
-  float rawBabyTemp = babySensor.getTempCByIndex(0);
-  babySensor.requestTemperatures(); // Queue next reading (non-blocking)
+  float rawBabyTemp = ds18b20.getTempCByIndex(0);
+  ds18b20.requestTemperatures(); // Queue next reading (non-blocking)
   babyTempValid = (rawBabyTemp != DEVICE_DISCONNECTED_C && rawBabyTemp >= 20.0f && rawBabyTemp <= 45.0f);
   if (babyTempValid) {
     babyTemp = rawBabyTemp;
