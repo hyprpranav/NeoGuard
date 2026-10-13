@@ -3,6 +3,7 @@ const DEVICE_ID = 'neoguard-one (Serial)';
 const state = {
   latest: null,
   isLive: false,
+  history: [],
   manualProfile: {
     birthWeightKg: '',
     gestationalAgeWeeks: '',
@@ -103,7 +104,32 @@ function render(data) {
   }
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
   elements.relayState.className = data.safetyRelayOn ? 'safe' : 'danger';
-  elements.lastSyncTime.textContent = new Date().toLocaleTimeString();
+  
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString();
+  elements.lastSyncTime.textContent = timeStr;
+  if (elements.historyLastLive) {
+    elements.historyLastLive.textContent = `Last frame synced at ${timeStr}`;
+  }
+
+  // Push to local rolling telemetry history buffer (up to 50 records)
+  state.history.unshift({
+    timestamp: timeStr,
+    babyTemp: data.babyTemp,
+    envTemp: data.envTemp,
+    spo2: data.spo2,
+    heartRate: data.heartRate,
+    pulse: data.pulse,
+    healthScore: data.healthScore,
+    riskLevel: data.riskLevel || 'Normal',
+    stateName: data.stateName || 'STABLE',
+    heaterOn: data.heaterOn,
+    uvOn: data.uvOn,
+    emergencyAlert: data.emergencyAlert
+  });
+  if (state.history.length > 50) {
+    state.history.pop();
+  }
 
   updateAiWidgets(data);
   applyLiveState();
@@ -261,6 +287,60 @@ function readManualProfileForm() {
   };
 }
 
+function openHistoryModal() {
+  if (!elements.historyModal) return;
+  if (!state.history || state.history.length === 0) {
+    elements.historyList.innerHTML = '<p style="color: #bac4ff; text-align: center; padding: 24px;">No telemetry frames recorded yet. Connect your device via USB to stream live data.</p>';
+  } else {
+    elements.historyList.innerHTML = state.history.map((item) => `
+      <div class="history-row">
+        <strong>${item.stateName} &mdash; Baby: ${formatNumber(item.babyTemp, 1, '°C')} | Env: ${formatNumber(item.envTemp, 1, '°C')} (Health: ${formatNumber(item.healthScore, 0, '/100')})</strong>
+        <small>SpO2: ${formatNumber(item.spo2, 0, '%')} | HR: ${formatNumber(item.heartRate, 0, ' bpm')} | Pulse: ${formatNumber(item.pulse, 0, ' bpm')} | Heater: ${item.heaterOn ? 'ON' : 'OFF'} | UV: ${item.uvOn ? 'ON' : 'OFF'} &bull; ${item.timestamp}</small>
+      </div>
+    `).join('');
+  }
+  elements.historyModal.classList.add('open');
+  elements.historyModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeHistoryModal() {
+  if (!elements.historyModal) return;
+  elements.historyModal.classList.remove('open');
+  elements.historyModal.setAttribute('aria-hidden', 'true');
+}
+
+function downloadHistoryCsv() {
+  if (!state.history || state.history.length === 0) {
+    alert('No telemetry data collected yet to download.');
+    return;
+  }
+  const headers = ['Timestamp', 'State', 'BabyTemp_C', 'EnvTemp_C', 'SpO2_Percent', 'HeartRate_BPM', 'Pulse_BPM', 'HealthScore', 'RiskLevel', 'Heater', 'UV', 'EmergencyAlert'];
+  const rows = state.history.map((h) => [
+    `"${h.timestamp}"`,
+    `"${h.stateName}"`,
+    h.babyTemp !== null && h.babyTemp !== undefined ? h.babyTemp : '',
+    h.envTemp !== null && h.envTemp !== undefined ? h.envTemp : '',
+    h.spo2 !== null && h.spo2 !== undefined ? h.spo2 : '',
+    h.heartRate !== null && h.heartRate !== undefined ? h.heartRate : '',
+    h.pulse !== null && h.pulse !== undefined ? h.pulse : '',
+    h.healthScore !== null && h.healthScore !== undefined ? h.healthScore : '',
+    `"${h.riskLevel || 'Normal'}"`,
+    h.heaterOn ? 'ON' : 'OFF',
+    h.uvOn ? 'ON' : 'OFF',
+    h.emergencyAlert ? 'YES' : 'NO'
+  ].join(','));
+  const csvContent = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `neoguard-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function bindControls() {
   if (elements.connectSerialBtn) {
     elements.connectSerialBtn.addEventListener('click', connectSerial);
@@ -283,6 +363,34 @@ function bindControls() {
     applyManualProfileToForm({});
     elements.commandStatus.textContent = 'Profile reset';
   });
+
+  if (elements.viewHistoryButton) {
+    elements.viewHistoryButton.addEventListener('click', openHistoryModal);
+  }
+
+  if (elements.historyCloseButton) {
+    elements.historyCloseButton.addEventListener('click', closeHistoryModal);
+  }
+
+  if (elements.downloadHistoryButton) {
+    elements.downloadHistoryButton.addEventListener('click', downloadHistoryCsv);
+  }
+
+  if (elements.historyModal) {
+    elements.historyModal.addEventListener('click', (e) => {
+      if (e.target === elements.historyModal) closeHistoryModal();
+    });
+  }
+
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.style.display = 'inline-block';
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('neoguard-auth');
+      localStorage.removeItem('neoguard-user');
+      window.location.href = '/auth.html';
+    });
+  }
 }
 
 function initializeDashboard() {
@@ -294,8 +402,21 @@ function initializeDashboard() {
   } catch (e) { }
 
   applyLiveState();
-  elements.userName.textContent = 'Welcome, Local User';
-  elements.userEmail.textContent = 'Offline Mode';
+
+  try {
+    const user = JSON.parse(localStorage.getItem('neoguard-user') || '{}');
+    if (user.email) {
+      elements.userEmail.textContent = user.email;
+      const displayName = user.name || user.email.split('@')[0];
+      elements.userName.textContent = `Welcome, ${displayName}`;
+    } else {
+      elements.userName.textContent = 'Welcome, Operator';
+      elements.userEmail.textContent = 'Serial Mode';
+    }
+  } catch (e) {
+    elements.userName.textContent = 'Welcome, Operator';
+    elements.userEmail.textContent = 'Serial Mode';
+  }
 }
 
 initializeDashboard();
