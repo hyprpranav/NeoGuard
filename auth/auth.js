@@ -349,3 +349,14 @@ auth.onAuthStateChanged((user) => {
     }
   }
 });
+
+window.addEventListener('DOMContentLoaded', () => {
+  const isSignup = window.location.hash === '#signup' || new URLSearchParams(window.location.search).get('tab') === 'signup';
+  if (isSignup) {
+    const signupBtn = document.getElementById('signup-tab-btn');
+    if (signupBtn) {
+      switchTab('signup', signupBtn);
+    }
+  }
+});
+

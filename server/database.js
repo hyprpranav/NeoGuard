@@ -1,4 +1,4 @@
-const mysql = require('mysql2/promise');
+let mysql;
 
 const dbConfig = {
   host: process.env.DB_HOST || '127.0.0.1',
@@ -58,12 +58,16 @@ function normalizeDeviceIp(value) {
 
 async function initializeDatabase() {
   try {
+    if (!mysql) {
+      mysql = require('mysql2/promise');
+    }
     const bootstrapConnection = await mysql.createConnection({
       host: dbConfig.host,
       port: dbConfig.port,
       user: dbConfig.user,
       password: dbConfig.password,
       multipleStatements: true,
+      connectTimeout: 2000,
     });
 
     await bootstrapConnection.query(

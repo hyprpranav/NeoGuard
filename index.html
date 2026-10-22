@@ -1,14 +1,1000 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NeoGuard</title>
-    <script>
-      window.location.href = './auth.html';
-    </script>
-  </head>
-  <body>
-    <p>Redirecting to login...</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoGuard — Multilayer Smart Textile System for Neonatal Thermal Care</title>
+  <meta name="description" content="NeoGuard is a portable smart-textile concept combining flexible conductive heating fabric, temperature sensing, vital-sign monitoring, and safety cut-off control for neonatal care." />
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/landing.css" />
+</head>
+<body>
+
+  <!-- ==========================================================================
+       NAVIGATION BAR
+       ========================================================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="brand" aria-label="NeoGuard Home">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v8M8 12h8"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <span class="brand-title">NeoGuard</span>
+          <span class="brand-tagline">Smart Textile for Neonatal Thermal Care</span>
+        </div>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#textile-structure" class="nav-link">Structure</a></li>
+          <li><a href="#technology" class="nav-link">Technology</a></li>
+          <li><a href="#safety" class="nav-link">Safety</a></li>
+          <li><a href="/simulation" class="nav-link">Simulations</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions" id="nav-actions">
+        <a href="/auth.html" class="btn btn-outline btn-sm">Sign In</a>
+        <a href="/auth.html#signup" class="btn btn-primary btn-sm">Sign Up</a>
+      </div>
+
+      <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       HERO SECTION
+       ========================================================================== -->
+  <section class="hero-section" id="home">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          Engineering Innovation &bull; Team Sentinel
+        </div>
+
+        <h1 class="hero-title">NEOGUARD</h1>
+        <h2 class="hero-subtitle">A Multilayer Smart Textile System for Neonatal Thermal Care and Vital Monitoring</h2>
+
+        <p class="hero-desc">
+          NeoGuard is a portable smart-textile concept designed to support newborn thermal care while monitoring important vital parameters. It combines flexible conductive heating fabric, temperature sensing, heart-rate and SpO₂ monitoring, and automatic safety control in a multilayer textile structure.
+        </p>
+
+        <p class="hero-desc" style="margin-top: -16px; margin-bottom: 28px;">
+          The system is intended to support neonatal care in rural and hilly areas, small clinics, primary healthcare centres, neonatal transport, and home or community-care settings.
+        </p>
+
+        <div class="hero-buttons">
+          <a href="#about" class="btn btn-primary btn-lg">
+            <span>Explore NeoGuard</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 13l5 5 5-5M12 4v14"/>
+            </svg>
+          </a>
+          <a href="/auth.html" class="btn btn-outline btn-lg">Sign In</a>
+          <a href="/simulation" class="btn btn-cyan btn-lg">
+            <span>View Simulations</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="hero-tags">
+          <span class="hero-tag-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            Flexible Conductive Weave
+          </span>
+          <span class="hero-tag-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/></svg>
+            Dual Cloud &amp; Serial Telemetry
+          </span>
+          <span class="hero-tag-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Auto Safety Cut-Off
+          </span>
+        </div>
+      </div>
+
+      <!-- Hero Visual Card -->
+      <div class="hero-visual">
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <span class="hero-card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              Smart Textile Schematic
+            </span>
+            <span class="status-pill-live">
+              <span class="hero-badge-dot" style="width:6px; height:6px; background-color:#15803d;"></span>
+              Active Concept
+            </span>
+          </div>
+
+          <div class="textile-preview-container">
+            <div class="textile-layer-card layer-accent-top">
+              <div class="layer-info">
+                <h4>Layer 1: Top Soft Textile</h4>
+                <p>Comfortable, hypoallergenic outer contact surface</p>
+              </div>
+              <span class="layer-badge">Top Layer</span>
+            </div>
+
+            <div class="textile-layer-card layer-accent-mid">
+              <div class="layer-info">
+                <h4>Layer 2: Heating &amp; Sensor Matrix</h4>
+                <p>Flexible conductive fabric + DS18B20 &amp; MAX30102</p>
+              </div>
+              <span class="layer-badge" style="background:#ea580c; color:#ffffff;">Core Zone</span>
+            </div>
+
+            <div class="textile-layer-card layer-accent-bot">
+              <div class="layer-info">
+                <h4>Layer 3: Bottom Soft Textile</h4>
+                <p>Protective insulation &amp; lower structural boundary</p>
+              </div>
+              <span class="layer-badge">Base Layer</span>
+            </div>
+          </div>
+
+          <div class="hero-telemetry-preview">
+            <div class="telemetry-mini-stat">
+              <span>Target Temp</span>
+              <strong>36.5 – 37.5°C</strong>
+            </div>
+            <div class="telemetry-mini-stat">
+              <span>SpO₂ Sensor</span>
+              <strong>MAX30102</strong>
+            </div>
+            <div class="telemetry-mini-stat">
+              <span>Safety Logic</span>
+              <strong>Auto Cut-Off</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       ABOUT NEOGUARD SECTION
+       ========================================================================== -->
+  <section class="section section-alt" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Overview</span>
+        <h2 class="section-title">About NeoGuard</h2>
+        <p class="section-subtitle">
+          A dedicated exploration in combining flexible thermal actuation with non-invasive vital sensing in a practical, textile-native form factor.
+        </p>
+      </div>
+
+      <div class="about-narrative">
+        <p style="margin-bottom: 18px;">
+          NeoGuard is designed to combine thermal support and basic vital monitoring in a portable textile-based system.
+        </p>
+        <p style="margin-bottom: 18px;">
+          The blanket uses a three-layer structure. Soft textile material forms the outer layers, while the middle layer incorporates flexible conductive heating fabric. Sensors collect temperature and vital-sign readings, and an ESP32-WROOM controller processes the data.
+        </p>
+        <p style="margin-bottom: 18px;">
+          Based on predefined temperature limits, the controller manages the heating system and monitors safety conditions. Sensor readings can also be transmitted for remote viewing and stored for later reference.
+        </p>
+        <p>
+          The aim is to develop a compact and accessible monitoring platform for settings where advanced neonatal monitoring facilities may be limited.
+        </p>
+      </div>
+
+      <div class="three-cards-grid">
+        <div class="info-card">
+          <div class="info-card-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+            </svg>
+          </div>
+          <h3>Thermal Support</h3>
+          <p>Temperature-based control of flexible conductive heating fabric to supply calibrated warming within predefined boundaries.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <h3>Vital Monitoring</h3>
+          <p>Heart-rate and SpO₂ monitoring alongside temperature measurement to keep continuous track of physiological stability.</p>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+          </div>
+          <h3>Connected Monitoring</h3>
+          <p>Sensor-data display, alerts, and historical records through a connected interface for timely clinical insight.</p>
+        </div>
+      </div>
+
+      <div class="disclaimer-banner">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <p>
+          <strong>Medical Boundary Notice:</strong> NeoGuard is designed to combine thermal support and basic vital monitoring in a portable textile-based system. NeoGuard does not replace an incubator, neonatal intensive care unit (NICU), or qualified medical professionals.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THE CHALLENGE (PROBLEM STATEMENT)
+       ========================================================================== -->
+  <section class="section" id="challenge">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Context</span>
+        <h2 class="section-title">The Challenge</h2>
+        <p class="section-subtitle">
+          Understanding the clinical and logistical realities faced during neonatal thermal management in low-resource environments.
+        </p>
+      </div>
+
+      <div class="challenge-grid">
+        <div class="challenge-card">
+          <div class="challenge-number">01</div>
+          <div class="challenge-card-body">
+            <h4>Heat Loss Vulnerability</h4>
+            <p>Preterm and low-birth-weight newborns are more vulnerable to rapid heat loss due to high body-surface-area-to-weight ratios and limited subcutaneous tissue.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card">
+          <div class="challenge-number">02</div>
+          <div class="challenge-card-body">
+            <h4>Continuous Thermal Balance</h4>
+            <p>Maintaining a suitable thermal environment requires careful and continuous monitoring to avert both hypothermic drop and dangerous hyperthermia.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card">
+          <div class="challenge-number">03</div>
+          <div class="challenge-card-body">
+            <h4>Remote Setting Limitations</h4>
+            <p>Continuous monitoring facilities may be limited in some rural and remote settings where specialized instrumentation is unavailable.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card">
+          <div class="challenge-number">04</div>
+          <div class="challenge-card-body">
+            <h4>Equipment Inaccessibility</h4>
+            <p>Conventional warming and monitoring equipment may not be easily accessible or transportable in every care environment, transit vehicle, or community clinic.</p>
+          </div>
+        </div>
+
+        <div class="challenge-card" style="grid-column: 1 / -1; max-width: 680px; margin: 0 auto;">
+          <div class="challenge-number">05</div>
+          <div class="challenge-card-body">
+            <h4>Caregiver Clarity Needs</h4>
+            <p>Caregivers need clear, real-time information about temperature, vital readings, and abnormal operating conditions to take informed, timely actions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       HOW NEOGUARD WORKS (WORKFLOW)
+       ========================================================================== -->
+  <section class="section section-alt" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">System Architecture</span>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">
+          A closed-loop pipeline executing continuous sensing, autonomous threshold comparison, controlled thermal actuation, and multi-channel telemetry.
+        </p>
+      </div>
+
+      <div class="workflow-container">
+        <div class="workflow-steps-horizontal">
+          <!-- Step 1 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 1</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+              </svg>
+            </div>
+            <h4>SENSE</h4>
+            <p>Sensors collect temperature and vital-sign readings directly from the infant and environment.</p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 2</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+                <line x1="20" y1="9" x2="23" y2="9"/>
+                <line x1="20" y1="14" x2="23" y2="14"/>
+                <line x1="1" y1="9" x2="4" y2="9"/>
+                <line x1="1" y1="14" x2="4" y2="14"/>
+              </svg>
+            </div>
+            <h4>PROCESS</h4>
+            <p>The ESP32-WROOM receives and processes sensor signals through digital filtering.</p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 3</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <h4>COMPARE</h4>
+            <p>The measured temperature is compared with predefined safe operating limits (36.5–37.5°C).</p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 4</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <h4>RESPOND</h4>
+            <p>The controller activates heating when needed and triggers automatic cut-off if limits are exceeded.</p>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 5</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12.55a11 11 0 0114.08 0"/>
+                <path d="M1.42 9a16 16 0 0121.16 0"/>
+                <path d="M8.53 16.11a6 6 0 016.95 0"/>
+                <line x1="12" y1="20" x2="12.01" y2="20"/>
+              </svg>
+            </div>
+            <h4>MONITOR</h4>
+            <p>Readings can be displayed locally on OLED/Serial or transmitted via Wi-Fi for remote viewing.</p>
+          </div>
+
+          <!-- Step 6 -->
+          <div class="workflow-card">
+            <span class="step-badge">STEP 6</span>
+            <div class="step-icon-wrapper">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+            </div>
+            <h4>ALERT</h4>
+            <p>The interface informs caregivers when monitored readings or system conditions require attention.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-summary-bar">
+        <span class="flow-pill">Sense</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill">Process</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill">Compare</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill">Respond</span>
+        <span class="flow-arrow">&rarr;</span>
+        <span class="flow-pill">Monitor</span>
+      </div>
+
+      <p style="text-align: center; font-size: 0.82rem; color: var(--color-text-muted); margin-top: 20px;">
+        * The system operates closed-loop feedback control for thermal regulation. It does not independently diagnose medical conditions.
+      </p>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       THREE-LAYER TEXTILE DESIGN
+       ========================================================================== -->
+  <section class="section" id="textile-structure">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Textile Engineering</span>
+        <h2 class="section-title">Multilayer Smart Textile Structure</h2>
+        <p class="section-subtitle">
+          An integrated three-tier textile sandwich designed to isolate heating elements from direct infant contact while providing uniform thermal transfer.
+        </p>
+      </div>
+
+      <div class="textile-design-grid">
+        <div class="textile-diagram-wrapper">
+          <div class="exploded-connector"></div>
+          <div class="exploded-stack">
+            <!-- Top Layer -->
+            <div class="exploded-layer layer-top">
+              <div class="layer-heading">
+                <div class="layer-index">1</div>
+                <div>
+                  <h4 class="layer-text-title">Top Layer — Soft Textile</h4>
+                  <p class="layer-text-desc">Comfortable, breathable infant contact surface</p>
+                </div>
+              </div>
+              <span class="layer-badge">Skin Side</span>
+            </div>
+
+            <!-- Middle Layer -->
+            <div class="exploded-layer layer-mid">
+              <div class="layer-heading">
+                <div class="layer-index" style="background:#ea580c;">2</div>
+                <div>
+                  <h4 class="layer-text-title">Middle Layer — Heating &amp; Sensors</h4>
+                  <p class="layer-text-desc">Conductive heating fabric + DS18B20 &amp; MAX30102 array</p>
+                </div>
+              </div>
+              <span class="layer-badge" style="background:#fff7ed; border-color:#f97316; color:#ea580c;">Active Core</span>
+            </div>
+
+            <!-- Bottom Layer -->
+            <div class="exploded-layer layer-bot">
+              <div class="layer-heading">
+                <div class="layer-index">3</div>
+                <div>
+                  <h4 class="layer-text-title">Bottom Layer — Soft Textile</h4>
+                  <p class="layer-text-desc">Protective insulation &amp; lower structural blanket layer</p>
+                </div>
+              </div>
+              <span class="layer-badge">Ambient Side</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="layer-details-content">
+          <div class="layer-detail-card">
+            <h4>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 7h-7m-4 0H4m16 5h-4m-4 0H4m16 5h-2m-4 0H4"/>
+              </svg>
+              Top Layer — Soft Textile
+            </h4>
+            <ul>
+              <li>Soft textile material designed for gentle contact with sensitive newborn skin.</li>
+              <li>Intended to provide a comfortable outer surface while maintaining vapor permeability.</li>
+              <li>Buffers infant skin from direct contact with internal electronic components.</li>
+            </ul>
+          </div>
+
+          <div class="layer-detail-card">
+            <h4>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Middle Layer — Heating and Sensor Integration
+            </h4>
+            <ul>
+              <li>Flexible conductive heating fabric functioning as a distributed low-voltage warming element.</li>
+              <li>Provision for embedded sensor placement (DS18B20 temperature probe and MAX30102 optical sensor).</li>
+              <li>Designed to support controlled thermal operation with uniform heat dissipation.</li>
+            </ul>
+          </div>
+
+          <div class="layer-detail-card">
+            <h4>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Bottom Layer — Soft Textile
+            </h4>
+            <ul>
+              <li>Soft textile material forming the lower layer of the proposed blanket structure.</li>
+              <li>Minimizes downward thermal leakage toward external surfaces.</li>
+              <li>Protects internal wiring, busbars, and sensor leads from external mechanical snagging.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       TECHNOLOGY & HARDWARE SECTION
+       ========================================================================== -->
+  <section class="section section-alt" id="technology">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Hardware &amp; Software</span>
+        <h2 class="section-title">Technology Behind NeoGuard</h2>
+        <p class="section-subtitle">
+          Engineered around standard, robust embedded components and cloud infrastructure for verifiable, reproducible prototyping.
+        </p>
+      </div>
+
+      <div class="tech-grid">
+        <!-- 1. ESP32-WROOM -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                <rect x="9" y="9" width="6" height="6"/>
+                <line x1="9" y1="1" x2="9" y2="4"/>
+                <line x1="15" y1="1" x2="15" y2="4"/>
+                <line x1="9" y1="20" x2="9" y2="23"/>
+                <line x1="15" y1="20" x2="15" y2="23"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Controller</span>
+              <h3>ESP32-WROOM</h3>
+            </div>
+          </div>
+          <p>Main controller for sensor acquisition, real-time signal processing, heating relay actuation, and Wi-Fi communication.</p>
+        </div>
+
+        <!-- 2. DS18B20 -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Temperature</span>
+              <h3>DS18B20</h3>
+            </div>
+          </div>
+          <p>High-precision digital temperature measurement on a 1-Wire bus for continuous, calibrated infant body temperature monitoring.</p>
+        </div>
+
+        <!-- 3. MAX30102 -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Vitals Sensing</span>
+              <h3>MAX30102</h3>
+            </div>
+          </div>
+          <p>Integrated pulse oximetry and heart-rate sensor utilizing dual red/infrared optical LEDs and photodetector via I2C interface.</p>
+        </div>
+
+        <!-- 4. DHT11 -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Environment</span>
+              <h3>DHT11</h3>
+            </div>
+          </div>
+          <p>Ambient temperature and humidity monitoring to evaluate microclimate stability surrounding the neonatal blanket.</p>
+        </div>
+
+        <!-- 5. Heating Fabric -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Actuation</span>
+              <h3>Conductive Fabric</h3>
+            </div>
+          </div>
+          <p>Flexible conductive heating fabric operating as a low-voltage heating element embedded in the middle textile layer.</p>
+        </div>
+
+        <!-- 6. Relay Cut-off -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Protection</span>
+              <h3>Relay &amp; Cut-Off</h3>
+            </div>
+          </div>
+          <p>Dedicated isolation relays that immediately disconnect heating power upon detection of predefined unsafe thermal conditions.</p>
+        </div>
+
+        <!-- 7. Firebase -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Cloud Database</span>
+              <h3>Firebase</h3>
+            </div>
+          </div>
+          <p>Cloud data storage and retrieval via Realtime Database for synchronizing telemetry frames, alerts, and access-controlled accounts.</p>
+        </div>
+
+        <!-- 8. Android App -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Mobile Platform</span>
+              <h3>Android Application</h3>
+            </div>
+          </div>
+          <p>Dedicated interface for viewing live readings, alert notifications, and historical trends directly on healthcare workers' phones.</p>
+        </div>
+
+        <!-- 9. Serial/USB Monitoring -->
+        <div class="tech-card">
+          <div class="tech-card-header">
+            <div class="tech-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <div class="tech-title-wrap">
+              <span class="tech-category">Direct Interface</span>
+              <h3>Serial/USB Monitoring</h3>
+            </div>
+          </div>
+          <p>Direct Web Serial API connection to a local computer for offline monitoring, benchtop diagnostics, and edge debugging.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       MONITORING & CONNECTIVITY
+       ========================================================================== -->
+  <section class="section" id="connectivity">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Telemetry Pipeline</span>
+        <h2 class="section-title">Connected Monitoring</h2>
+        <p class="section-subtitle">
+          Structured data pipelines delivering real-time telemetry from on-blanket sensors to both cloud interfaces and local computers.
+        </p>
+      </div>
+
+      <div class="architecture-card">
+        <h4 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-navy); margin-bottom: 16px;">
+          Primary Cloud Pipeline
+        </h4>
+        <div class="pipeline-diagram">
+          <div class="pipe-node">
+            <div class="pipe-box highlight">Sensors</div>
+            <small style="color:var(--color-text-muted); font-size:0.75rem;">DS18B20 / MAX30102</small>
+          </div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-node">
+            <div class="pipe-box">ESP32-WROOM</div>
+            <small style="color:var(--color-text-muted); font-size:0.75rem;">Firmware v2.1</small>
+          </div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-node">
+            <div class="pipe-box">Wi-Fi</div>
+            <small style="color:var(--color-text-muted); font-size:0.75rem;">802.11 b/g/n</small>
+          </div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-node">
+            <div class="pipe-box">Firebase</div>
+            <small style="color:var(--color-text-muted); font-size:0.75rem;">Realtime DB</small>
+          </div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-node">
+            <div class="pipe-box highlight">Android App</div>
+            <small style="color:var(--color-text-muted); font-size:0.75rem;">Caregiver View</small>
+          </div>
+        </div>
+
+        <h4 style="font-family: var(--font-heading); font-size: 1.15rem; color: var(--color-navy); margin-bottom: 12px; margin-top: 24px;">
+          Optional Local Monitoring Path
+        </h4>
+        <div class="local-pipeline-strip">
+          <div class="pipe-box" style="padding: 6px 12px;">ESP32-WROOM</div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-box" style="padding: 6px 12px;">Serial / USB (115200 Baud)</div>
+          <span class="pipe-arrow">&rarr;</span>
+          <div class="pipe-box highlight" style="padding: 6px 12px;">Local PC Dashboard (Web Serial API)</div>
+        </div>
+
+        <div class="monitoring-points-grid">
+          <div class="monitoring-point-item">
+            <span class="point-dot"></span>
+            <p><strong>Sensor Acquisition:</strong> Raw readings are acquired by the ESP32 microcontroller at deterministic intervals.</p>
+          </div>
+          <div class="monitoring-point-item">
+            <span class="point-dot"></span>
+            <p><strong>Wi-Fi Transmission:</strong> Collected telemetry packages can be transmitted over local Wi-Fi directly to Firebase cloud endpoints.</p>
+          </div>
+          <div class="monitoring-point-item">
+            <span class="point-dot"></span>
+            <p><strong>Mobile Retrieval:</strong> The Android application retrieves and visualizes active readings for bedside or remote checking.</p>
+          </div>
+          <div class="monitoring-point-item">
+            <span class="point-dot"></span>
+            <p><strong>Historical Audit:</strong> Past telemetry records can be rendered as trend curves or exported as CSV for subsequent review.</p>
+          </div>
+          <div class="monitoring-point-item" style="grid-column: 1 / -1;">
+            <span class="point-dot"></span>
+            <p><strong>Local PC Support:</strong> When internet connectivity is absent, a local computer can monitor readings directly through the serial/USB interface without data loss.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SAFETY FEATURES
+       ========================================================================== -->
+  <section class="section section-alt" id="safety">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Safety Engineering</span>
+        <h2 class="section-title">Safety Comes First</h2>
+        <p class="section-subtitle">
+          Prioritizing infant well-being through layered fail-safe mechanisms, deterministic heating boundaries, and fault containment.
+        </p>
+      </div>
+
+      <div class="safety-grid">
+        <div class="safety-card">
+          <h4>Temperature Monitoring</h4>
+          <p>Continuously evaluates available temperature readings with digital resolution down to 0.0625°C to catch thermal drift early.</p>
+        </div>
+
+        <div class="safety-card">
+          <h4>Controlled Heating</h4>
+          <p>Activates heating strictly according to the configured safe temperature range (36.5°C to 37.5°C) to prevent thermal instability.</p>
+        </div>
+
+        <div class="safety-card">
+          <h4>Automatic Cut-Off</h4>
+          <p>Immediately disconnects the heating relay when configured unsafe conditions or temperatures exceeding upper limits are detected.</p>
+        </div>
+
+        <div class="safety-card">
+          <h4>Sensor-Fault Handling</h4>
+          <p>Handles missing, disconnected, or invalid sensor readings according to safe fallback logic, de-energizing the heater until sensor health is verified.</p>
+        </div>
+      </div>
+
+      <div class="safety-note-card">
+        <div class="safety-note-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <p>
+          <strong>Prototype Notice:</strong> NeoGuard is a developing prototype. Its thermal performance, sensor accuracy, electrical safety, textile safety, and clinical suitability require appropriate testing and validation before use with newborns.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SIMULATION RESULTS SECTION ON LANDING PAGE
+       ========================================================================== -->
+  <section class="section" id="simulations">
+    <div class="container">
+      <div class="sim-preview-box">
+        <div class="sim-preview-inner">
+          <div class="sim-preview-content">
+            <span class="section-tag" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8;">Research &bull; FEM Studies</span>
+            <h3>Textile Design and Simulation Studies</h3>
+            <p>
+              Explore the available simulation results related to the proposed NeoGuard textile structure. These results are intended to help evaluate selected design characteristics and identify areas for further development.
+            </p>
+            <a href="/simulation" class="btn btn-cyan btn-lg">
+              <span>View All Simulations</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="sim-cards-mini">
+            <a href="/simulation#sim-01" class="sim-mini-item">
+              <span>Simulation 01 (sm1)</span>
+              <span>Transient Thermal Analysis (120s, 37.28°C) &rarr;</span>
+            </a>
+            <a href="/simulation#sim-02" class="sim-mini-item">
+              <span>Simulation 02 (sm2)</span>
+              <span>Coupled Thermal Body Load (37.27°C) &rarr;</span>
+            </a>
+            <a href="/simulation#sim-03" class="sim-mini-item">
+              <span>Simulation 03 (sm3)</span>
+              <span>Total Structural Deformation (0.098 mm) &rarr;</span>
+            </a>
+            <a href="/simulation#sim-04" class="sim-mini-item">
+              <span>Simulation 04 (sm4)</span>
+              <span>von-Mises Thermal Stress (0.536 MPa) &rarr;</span>
+            </a>
+            <a href="/simulation#sim-05" class="sim-mini-item">
+              <span>Simulation 05 (sm5)</span>
+              <span>Steady-State Thermal (Equilibrium: 37.27°C) &rarr;</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       REQUEST / CONTACT FORM
+       ========================================================================== -->
+  <section class="section section-alt" id="contact">
+    <div class="container">
+      <div class="contact-layout">
+        <div class="contact-info-col">
+          <span class="section-tag">Get in Touch</span>
+          <h3>Request Information</h3>
+          <p>
+            Have technical questions about NeoGuard, smart-textile integration, or academic demonstration? Submit your inquiry to Team Sentinel.
+          </p>
+
+          <div class="contact-meta-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>Project Team: Team Sentinel</span>
+          </div>
+
+          <div class="contact-meta-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+            </svg>
+            <span>Deployment: neoguard-zeta.vercel.app</span>
+          </div>
+
+          <div class="contact-meta-item">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Prototype Evaluation Phase</span>
+          </div>
+        </div>
+
+        <div class="contact-form-col">
+          <div id="form-feedback" class="form-feedback"></div>
+          <form id="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contact-name">Full Name *</label>
+                <input type="text" id="contact-name" class="form-control" placeholder="Dr. / Prof. / Name" required />
+              </div>
+              <div class="form-group">
+                <label for="contact-email">Email Address *</label>
+                <input type="email" id="contact-email" class="form-control" placeholder="name@domain.com" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="contact-org">Institution or Organisation (Optional)</label>
+              <input type="text" id="contact-org" class="form-control" placeholder="College / Hospital / Organization" />
+            </div>
+
+            <div class="form-group">
+              <label for="contact-message">Request / Message *</label>
+              <textarea id="contact-message" class="form-control" rows="4" placeholder="Detail your query or collaboration inquiry regarding NeoGuard..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+              <span>Submit Request</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <h2>NEOGUARD</h2>
+          <p>A Multilayer Smart Textile System for Neonatal Thermal Care and Vital Monitoring</p>
+        </div>
+        <div class="footer-links">
+          <a href="#home" class="footer-link">Home</a>
+          <a href="#about" class="footer-link">About</a>
+          <a href="#how-it-works" class="footer-link">How It Works</a>
+          <a href="#technology" class="footer-link">Technology</a>
+          <a href="#safety" class="footer-link">Safety</a>
+          <a href="/simulation" class="footer-link">Simulations</a>
+          <a href="/auth.html" class="footer-link">Sign In</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          Developed by <span class="footer-team">Team Sentinel</span> &bull; Engineering Innovation Project
+        </div>
+        <div>
+          Academic &amp; Hackathon Demonstration &bull; All Rights Reserved
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase Scripts (for optional contact sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="/web/firebase-config.js"></script>
+  <script src="/assets/js/landing.js"></script>
+</body>
 </html>

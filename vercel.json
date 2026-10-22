@@ -1,5 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/simulation", "destination": "/simulation.html" },
+    { "source": "/simulation/", "destination": "/simulation.html" },
+    { "source": "/auth", "destination": "/auth.html" },
+    { "source": "/auth/", "destination": "/auth.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin/", "destination": "/admin.html" },
+    { "source": "/dashboard", "destination": "/web/index.html" },
+    { "source": "/dashboard/", "destination": "/web/index.html" }
+  ]
 }
