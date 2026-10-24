@@ -54,28 +54,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isAuth && user) {
       const navAuthArea = document.getElementById('nav-actions');
-      if (navAuthArea) {
-        const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/web/index.html';
-        navAuthArea.innerHTML = `
-          <a href="${dashboardUrl}" class="btn btn-primary btn-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-          </a>
-          <button id="nav-logout-btn" class="btn btn-outline btn-sm">Sign Out</button>
-        `;
+      const navMobileAuthArea = document.getElementById('nav-mobile-actions');
+      const dashboardUrl = user.role === 'admin' ? '/admin.html' : '/web/index.html';
 
-        const logoutBtn = document.getElementById('nav-logout-btn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', () => {
-            if (window.firebase && firebase.auth) {
-              try { firebase.auth().signOut(); } catch (e) {}
-            }
-            localStorage.removeItem('neoguard-auth');
-            localStorage.removeItem('neoguard-user');
-            window.location.reload();
-          });
-        }
-      }
+      const authButtonsHtml = `
+        <a href="${dashboardUrl}" class="btn btn-primary btn-sm">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <button class="btn btn-outline btn-sm nav-logout-trigger">Sign Out</button>
+      `;
+
+      if (navAuthArea) navAuthArea.innerHTML = authButtonsHtml;
+      if (navMobileAuthArea) navMobileAuthArea.innerHTML = authButtonsHtml;
+
+      document.querySelectorAll('.nav-logout-trigger').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (window.firebase && firebase.auth) {
+            try { firebase.auth().signOut(); } catch (e) {}
+          }
+          localStorage.removeItem('neoguard-auth');
+          localStorage.removeItem('neoguard-user');
+          window.location.reload();
+        });
+      });
     }
   } catch (e) {
     console.warn('Auth check skipped:', e);

@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/assets/icons/neoguard-logo.png" />
 
   <!-- Core Stylesheet -->
   <link rel="stylesheet" href="/assets/css/landing.css" />
@@ -17,20 +18,17 @@
 <body>
 
   <!-- ==========================================================================
-       NAVIGATION BAR
+       NAVIGATION BAR (PREVENTS TEXT WRAPPING, ADAPTS TO VIEWPORT)
        ========================================================================== -->
   <header class="navbar" id="navbar">
     <div class="container nav-container">
       <a href="#home" class="brand" aria-label="NeoGuard Home">
         <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="M12 8v8M8 12h8"/>
-          </svg>
+          <img src="/assets/icons/neoguard-logo.png" alt="NeoGuard Logo" class="brand-logo-img" />
         </div>
         <div class="brand-info">
-          <span class="brand-title">NeoGuard</span>
-          <span class="brand-tagline">Smart Textile for Neonatal Thermal Care</span>
+          <span class="brand-title">Neo<span class="title-guard">Guard</span><span class="title-dot">.</span></span>
+          <span class="brand-tagline">Smart Textile for Neonatal Care</span>
         </div>
       </a>
 
@@ -43,8 +41,12 @@
           <li><a href="#technology" class="nav-link">Technology</a></li>
           <li><a href="#safety" class="nav-link">Safety</a></li>
           <li><a href="/simulation" class="nav-link">Simulations</a></li>
-          <li><a href="/video" class="nav-link">Demo Video</a></li>
+          <li><a href="/video" class="nav-link"><span class="nav-pill-video">Demo Video</span></a></li>
           <li><a href="#contact" class="nav-link">Contact</a></li>
+          <li class="nav-mobile-actions" id="nav-mobile-actions">
+            <a href="/auth.html" class="btn btn-outline btn-sm">Sign In</a>
+            <a href="/auth.html#signup" class="btn btn-primary btn-sm">Sign Up</a>
+          </li>
         </ul>
       </nav>
 
@@ -54,7 +56,7 @@
       </div>
 
       <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 12h18M3 6h18M3 18h18"/>
         </svg>
       </button>
@@ -62,7 +64,7 @@
   </header>
 
   <!-- ==========================================================================
-       HERO SECTION
+       HERO SECTION (WHITE BACKGROUND, DARK BLUE & JUSTICE GREEN HARMONY)
        ========================================================================== -->
   <section class="hero-section" id="home">
     <div class="container hero-grid">
@@ -72,16 +74,28 @@
           Engineering Innovation &bull; Team Sentinel
         </div>
 
-        <h1 class="hero-title">NEOGUARD</h1>
+        <h1 class="hero-title">NEO<span>GUARD</span></h1>
         <h2 class="hero-subtitle">A Multilayer Smart Textile System for Neonatal Thermal Care and Vital Monitoring</h2>
 
         <p class="hero-desc">
           NeoGuard is a portable smart-textile concept designed to support newborn thermal care while monitoring important vital parameters. It combines flexible conductive heating fabric, temperature sensing, heart-rate and SpO₂ monitoring, and automatic safety control in a multilayer textile structure.
         </p>
 
-        <p class="hero-desc" style="margin-top: -16px; margin-bottom: 28px;">
-          The system is intended to support neonatal care in rural and hilly areas, small clinics, primary healthcare centres, neonatal transport, and home or community-care settings.
-        </p>
+        <!-- Neonatal Boy & Girl Dual Representation Badge Group -->
+        <div class="hero-gender-bar">
+          <span class="gender-pill-boy">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+            Boy Infant Care
+          </span>
+          <span class="gender-pill-girl">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+            Girl Infant Care
+          </span>
+          <span class="gender-pill-normo">
+            <span class="hero-badge-dot" style="width:6px; height:6px; background-color:#10b981;"></span>
+            36.5&deg;C &ndash; 37.5&deg;C Normothermia
+          </span>
+        </div>
 
         <div class="hero-buttons">
           <a href="#about" class="btn btn-primary btn-lg">
@@ -972,7 +986,12 @@
     <div class="container">
       <div class="footer-top">
         <div class="footer-brand">
-          <h2>NEOGUARD</h2>
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+            <img src="/assets/icons/neoguard-logo.png" alt="NeoGuard Logo" style="width:40px; height:40px; border-radius:8px; object-fit:contain;" />
+            <h2 style="margin:0; font-family:var(--font-heading); font-size:1.6rem; font-weight:800; color:#ffffff;">
+              Neo<span style="color:var(--color-cyan-deep);">Guard</span><span style="color:var(--color-green-emerald); font-weight:900;">.</span>
+            </h2>
+          </div>
           <p>A Multilayer Smart Textile System for Neonatal Thermal Care and Vital Monitoring</p>
         </div>
         <div class="footer-links">
