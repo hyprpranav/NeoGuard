@@ -75,12 +75,26 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-bg);
+  background-color: #0b1020;
+  background-image: url('/bg.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--color-navy);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-image: url('/mobile-bg.jpg');
+    background-position: center top;
+    background-attachment: fixed;
+  }
 }
 
 img {
@@ -95,7 +109,7 @@ a {
 }
 
 /* ==========================================================================
-   LAYOUT CONTAINERS
+   LAYOUT CONTAINERS & TRANSLUCENT GLASS SECTIONS
    ========================================================================== */
 
 .container {
@@ -110,12 +124,17 @@ a {
 .section {
   padding: 88px 0;
   position: relative;
+  background: rgba(255, 255, 255, 0.42);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 .section-alt {
-  background-color: var(--color-bg-alt);
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  background-color: rgba(240, 249, 255, 0.52);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .section-header {
@@ -445,7 +464,9 @@ a {
 
 .hero-section {
   padding: 70px 0 90px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(240, 249, 255, 0.60) 100%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
   position: relative;
   overflow: hidden;
 }
@@ -1734,4 +1755,30 @@ textarea.form-control {
   background-color: var(--color-green-light);
   color: var(--color-green-deep);
 }
+
+/* Frosted Glassmorphism for all Content Cards over the constant Background Image */
+.hero-card,
+.info-card,
+.challenge-card,
+.workflow-card,
+.textile-diagram-wrapper,
+.layer-detail-card,
+.tech-card,
+.safety-card,
+.architecture-card,
+.contact-layout {
+  background-color: rgba(255, 255, 255, 0.90) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+}
+
+.sim-preview-box {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(13, 34, 64, 0.95) 100%) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
 

@@ -40,10 +40,22 @@ body.video-page {
   flex-direction: column;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(circle at 15% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 75%, rgba(2, 132, 199, 0.08) 0%, transparent 50%),
-    linear-gradient(to bottom, #050912 0%, #070d18 100%);
+    linear-gradient(to bottom, rgba(5, 9, 18, 0.82) 0%, rgba(7, 13, 24, 0.88) 100%),
+    url('/bg.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
   background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+  body.video-page {
+    background-image: 
+      linear-gradient(to bottom, rgba(5, 9, 18, 0.82) 0%, rgba(7, 13, 24, 0.88) 100%),
+      url('/mobile-bg.jpg');
+    background-position: center top;
+    background-attachment: fixed;
+  }
 }
 
 .container {

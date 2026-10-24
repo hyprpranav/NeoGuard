@@ -24,17 +24,32 @@
 }
 
 body.sim-page {
-  background-color: var(--color-bg);
+  background-color: #0b1020;
+  background-image: url('/bg.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--color-navy);
   font-family: var(--font-body);
   line-height: 1.6;
 }
 
+@media (max-width: 768px) {
+  body.sim-page {
+    background-image: url('/mobile-bg.jpg');
+    background-position: center top;
+    background-attachment: fixed;
+  }
+}
+
 /* Header */
 .sim-header {
   padding: 64px 0 44px;
-  background-color: #ffffff;
-  border-bottom: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
   text-align: center;
 }
 
@@ -69,11 +84,13 @@ body.sim-page {
 
 /* Simulation Result Card */
 .sim-card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
   display: flex;
   flex-direction: column;
   transition: all 0.25s ease;
@@ -81,7 +98,7 @@ body.sim-page {
 
 .sim-card:hover {
   border-color: var(--color-cyan-deep);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
   transform: translateY(-2px);
 }
 
