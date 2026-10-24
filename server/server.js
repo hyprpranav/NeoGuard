@@ -21,6 +21,10 @@ app.get(['/', '/index.html'], (_request, response) => {
   response.sendFile(path.join(rootDir, 'index.html'));
 });
 
+app.get(['/video', '/video/', '/video.html'], (_request, response) => {
+  response.sendFile(path.join(rootDir, 'video.html'));
+});
+
 app.get(['/simulation', '/simulation/', '/simulation.html'], (_request, response) => {
   response.sendFile(path.join(rootDir, 'simulation.html'));
 });

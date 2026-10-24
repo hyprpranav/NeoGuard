@@ -3,6 +3,8 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/video", "destination": "/video.html" },
+    { "source": "/video/", "destination": "/video.html" },
     { "source": "/simulation", "destination": "/simulation.html" },
     { "source": "/simulation/", "destination": "/simulation.html" },
     { "source": "/auth", "destination": "/auth.html" },

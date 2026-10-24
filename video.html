@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoGuard — Autonomous Smart Textile Prototype Demonstration</title>
+  <meta name="description" content="Watch the official hardware demonstration and real-time closed-loop thermal regulation demonstration of the NeoGuard smart textile neonatal care system." />
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/video.css" />
+</head>
+<body class="video-page">
+
+  <!-- ==========================================================================
+       NAVIGATION BAR
+       ========================================================================== -->
+  <nav class="video-nav" id="video-nav">
+    <div class="container video-nav-inner">
+      <a href="/" class="nav-brand" aria-label="NeoGuard Home">
+        <div class="brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v8M8 12h8"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>NeoGuard <span class="live-dot" title="Prototype System Active"></span></h1>
+          <p>Autonomous Smart Textile for Neonatal Care</p>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <a href="/" class="nav-btn nav-btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Home
+        </a>
+        <a href="/simulation" class="nav-btn nav-btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          FEA Simulations
+        </a>
+        <a href="/dashboard" class="nav-btn nav-btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="9"/>
+            <rect x="14" y="3" width="7" height="5"/>
+            <rect x="14" y="12" width="7" height="9"/>
+            <rect x="3" y="16" width="7" height="5"/>
+          </svg>
+          Live Dashboard
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- Page Header Intro -->
+    <header class="video-hero">
+      <span class="video-pill-tag">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Hardware &amp; System Demonstration
+      </span>
+      <h2>NeoGuard &mdash; <span>Prototype Operational Demonstration</span></h2>
+      <p>
+        Observe the functional prototype in operation, showcasing multilayer conductive textile heating, closed-loop thermal regulation, vital parameter acquisition, and safety cut-off mechanisms.
+      </p>
+    </header>
+
+    <!-- ==========================================================================
+         PROFESSIONAL VIDEO PLAYER
+         ========================================================================== -->
+    <section class="player-wrapper" aria-label="Video Player Demonstration">
+      <div class="player-container" id="player-container" tabindex="0">
+
+        <!-- Top Floating Status Header -->
+        <div class="player-top-overlay">
+          <div class="player-title-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+              <line x1="7" y1="2" x2="7" y2="22"/>
+              <line x1="17" y1="2" x2="17" y2="22"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <line x1="2" y1="7" x2="7" y2="7"/>
+              <line x1="2" y1="17" x2="7" y2="17"/>
+              <line x1="17" y1="17" x2="22" y2="17"/>
+              <line x1="17" y1="7" x2="22" y2="7"/>
+            </svg>
+            NeoGuard Operational Prototype
+          </div>
+
+          <div class="quality-status-badge">
+            <svg class="badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <span id="quality-badge">1080p Ultra HD Enhanced</span>
+          </div>
+        </div>
+
+        <!-- Big Center Play Button Overlay -->
+        <button class="player-center-play" id="center-play-btn" aria-label="Play Demonstration Video">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="6 3 20 12 6 21 6 3"/>
+          </svg>
+        </button>
+
+        <!-- Dynamic Action Feedback Ripple -->
+        <div class="player-feedback" id="player-feedback">
+          <span id="feedback-text">Play</span>
+        </div>
+
+        <!-- HTML5 Video Element with Dual Source & Zero-Lag Preload -->
+        <video
+          id="neoguard-video"
+          class="video-element enhanced-mode"
+          preload="metadata"
+          playsinline
+          crossorigin="anonymous"
+        >
+          <source src="/assets/video/neoguardvideo.mp4" type="video/mp4" />
+          <source src="/neoguardvideo.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+
+        <!-- Custom Controls Bar -->
+        <div class="player-controls" id="player-controls">
+          
+          <!-- Scrubber Progress Bar -->
+          <div class="progress-container" id="progress-container" aria-label="Video Timeline">
+            <div class="progress-track">
+              <div class="progress-buffered" id="progress-buffered"></div>
+              <div class="progress-played" id="progress-played"></div>
+              <div class="progress-thumb" id="progress-thumb"></div>
+            </div>
+            <div class="progress-tooltip" id="progress-tooltip">00:00</div>
+          </div>
+
+          <!-- Bottom Button Row -->
+          <div class="controls-row">
+            <div class="controls-left">
+              <!-- Play / Pause -->
+              <button class="ctrl-btn" id="play-btn" aria-label="Play / Pause (Space)">
+                <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                  <rect x="6" y="4" width="4" height="16"/>
+                  <rect x="14" y="4" width="4" height="16"/>
+                </svg>
+              </button>
+
+              <!-- Skip -10 Seconds -->
+              <button class="ctrl-btn skip-btn" id="skip-back-btn" aria-label="Skip back 10 seconds (Left Arrow)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 4v6h6"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+                <span class="skip-num">10</span>
+              </button>
+
+              <!-- Skip +10 Seconds -->
+              <button class="ctrl-btn skip-btn" id="skip-fwd-btn" aria-label="Skip forward 10 seconds (Right Arrow)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 4v6h-6"/>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                <span class="skip-num">10</span>
+              </button>
+
+              <!-- Volume & Mute -->
+              <div class="volume-group">
+                <button class="ctrl-btn" id="volume-btn" aria-label="Toggle Mute (M)">
+                  <svg id="vol-high-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  </svg>
+                  <svg id="vol-muted-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                </button>
+                <div class="volume-slider-wrap">
+                  <input
+                    type="range"
+                    id="volume-slider"
+                    class="volume-slider"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.9"
+                    aria-label="Volume Slider"
+                  />
+                </div>
+              </div>
+
+              <!-- Time Display -->
+              <div class="time-display">
+                <span class="current-time" id="current-time">00:00</span> / <span id="duration">01:54</span>
+              </div>
+            </div>
+
+            <div class="controls-right">
+              <!-- Visual Clarity / Enhancement Engine Toggle -->
+              <button class="enhance-btn active" id="enhance-btn" aria-label="Toggle Visual Quality Enhancement (E)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Enhanced Clarity
+              </button>
+
+              <!-- Speed Selector Dropdown -->
+              <div class="speed-dropdown">
+                <button class="ctrl-btn speed-btn" id="speed-btn" aria-label="Playback Speed">1.0x</button>
+                <div class="speed-menu" id="speed-menu">
+                  <button class="speed-opt" data-speed="0.5">0.5x</button>
+                  <button class="speed-opt" data-speed="0.75">0.75x</button>
+                  <button class="speed-opt active" data-speed="1.0">1.0x (Normal)</button>
+                  <button class="speed-opt" data-speed="1.25">1.25x</button>
+                  <button class="speed-opt" data-speed="1.5">1.5x</button>
+                  <button class="speed-opt" data-speed="2.0">2.0x</button>
+                </div>
+              </div>
+
+              <!-- Picture in Picture -->
+              <button class="ctrl-btn" id="pip-btn" aria-label="Picture-in-Picture">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <rect x="12" y="11" width="8" height="7" rx="1"/>
+                </svg>
+              </button>
+
+              <!-- Fullscreen Toggle -->
+              <button class="ctrl-btn" id="fullscreen-btn" aria-label="Toggle Fullscreen (F)">
+                <svg id="fs-expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+                <svg id="fs-compress-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                  <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         DEMONSTRATION CHAPTERS
+         ========================================================================== -->
+    <section class="chapters-card">
+      <div class="chapters-header">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-cyan)" stroke-width="2">
+            <line x1="8" y1="6" x2="21" y2="6"/>
+            <line x1="8" y1="12" x2="21" y2="12"/>
+            <line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/>
+            <line x1="3" y1="12" x2="3.01" y2="12"/>
+            <line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Demonstration Key Chapters
+        </h3>
+        <span style="font-size:0.8rem; color:var(--color-text-muted);">Click any chapter to jump directly in video</span>
+      </div>
+
+      <div class="chapters-grid">
+        <button class="chapter-btn active" data-time="0" data-end="25">
+          <span class="chapter-time">00:00</span>
+          <span class="chapter-title">Prototype Introduction &amp; Textile Overview</span>
+        </button>
+        <button class="chapter-btn" data-time="25" data-end="50">
+          <span class="chapter-time">00:25</span>
+          <span class="chapter-title">Sensor Grid &amp; ESP32 Controller Setup</span>
+        </button>
+        <button class="chapter-btn" data-time="50" data-end="75">
+          <span class="chapter-time">00:50</span>
+          <span class="chapter-title">Closed-Loop Thermal Heating &amp; Relay State</span>
+        </button>
+        <button class="chapter-btn" data-time="75" data-end="100">
+          <span class="chapter-time">01:15</span>
+          <span class="chapter-title">Safety Cut-Off &amp; Emergency Limit Trigger</span>
+        </button>
+        <button class="chapter-btn" data-time="100" data-end="114">
+          <span class="chapter-time">01:40</span>
+          <span class="chapter-title">Telemetry Sync &amp; Clinical Portability</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         PROTOTYPE TELEMETRY & DASHBOARD INTEGRATION
+         ========================================================================== -->
+    <section class="telemetry-section">
+      <div class="section-head">
+        <h3>Demonstrated Prototype Specifications</h3>
+        <p>Operational parameters validated during the recorded hardware demonstration</p>
+      </div>
+
+      <div class="telemetry-grid">
+        <!-- DS18B20 Infant Temp -->
+        <div class="telemetry-card">
+          <div class="telemetry-icon-row">
+            <div class="telemetry-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+            </div>
+            <span class="telemetry-status-tag">PID TARGET</span>
+          </div>
+          <span class="telemetry-label">Infant Surface Temperature</span>
+          <span class="telemetry-val">36.5°C &mdash; 37.5°C</span>
+          <p class="telemetry-desc">Monitored via high-accuracy DS18B20 digital thermal sensor embedded in the soft fabric contact zone.</p>
+        </div>
+
+        <!-- DHT11 Ambient Microclimate -->
+        <div class="telemetry-card">
+          <div class="telemetry-icon-row">
+            <div class="telemetry-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+              </svg>
+            </div>
+            <span class="telemetry-status-tag">BUFFER ZONE</span>
+          </div>
+          <span class="telemetry-label">Ambient Microclimate</span>
+          <span class="telemetry-val">24°C / 55% RH</span>
+          <p class="telemetry-desc">Monitored via integrated DHT11 sensor to compute real-time convective thermal dissipation.</p>
+        </div>
+
+        <!-- MAX30102 PPG & SpO2 -->
+        <div class="telemetry-card">
+          <div class="telemetry-icon-row">
+            <div class="telemetry-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <span class="telemetry-status-tag">ACTIVE PPG</span>
+          </div>
+          <span class="telemetry-label">Cardiac &amp; Oxygen Saturation</span>
+          <span class="telemetry-val">HR + SpO2 Sync</span>
+          <p class="telemetry-desc">Continuous photoplethysmography via MAX30102 sensor with analog pulse backup channel.</p>
+        </div>
+
+        <!-- Safety Relay & Auto Cut-off -->
+        <div class="telemetry-card">
+          <div class="telemetry-icon-row">
+            <div class="telemetry-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <span class="telemetry-status-tag">FAIL-SAFE</span>
+          </div>
+          <span class="telemetry-label">Hardware Safety Cut-off</span>
+          <span class="telemetry-val">&lt; 38.5°C Hard Cut</span>
+          <p class="telemetry-desc">Dedicated physical electromechanical relay that instantly disengages the heating blanket if thresholds are exceeded.</p>
+        </div>
+      </div>
+
+      <!-- Live Dashboard Connection Banner -->
+      <div class="dashboard-banner">
+        <div class="dashboard-banner-text">
+          <h4>Explore Real-Time Interactive Telemetry</h4>
+          <p>Launch the NeoGuard Hospital Monitoring Dashboard to view real-time data feeds, historical graphs, and alert logs.</p>
+        </div>
+        <div class="dashboard-banner-actions">
+          <a href="/dashboard" class="btn-cyan">
+            <span>Open Live Dashboard</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Keyboard Shortcuts Quick Guide -->
+      <div class="shortcuts-strip">
+        <span style="font-weight:600; color:#fff;">Player Shortcuts:</span>
+        <div class="shortcut-item"><kbd>Space</kbd> / <kbd>K</kbd> Play/Pause</div>
+        <div class="shortcut-item"><kbd>&larr;</kbd> / <kbd>J</kbd> -10s</div>
+        <div class="shortcut-item"><kbd>&rarr;</kbd> / <kbd>L</kbd> +10s</div>
+        <div class="shortcut-item"><kbd>&uarr;</kbd> / <kbd>&darr;</kbd> Volume</div>
+        <div class="shortcut-item"><kbd>M</kbd> Mute</div>
+        <div class="shortcut-item"><kbd>F</kbd> Fullscreen</div>
+        <div class="shortcut-item"><kbd>E</kbd> Clarity Filter</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="video-footer">
+    <div class="container video-footer-inner">
+      <div>
+        <strong>NeoGuard</strong> &bull; Autonomous Smart Textile for Neonatal Thermal Care &bull; Demonstration
+      </div>
+      <div class="footer-links">
+        <a href="/" class="footer-link">Home</a>
+        <a href="/simulation" class="footer-link">Simulations</a>
+        <a href="/dashboard" class="footer-link">Dashboard</a>
+        <a href="/auth.html" class="footer-link">Sign In</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/video.js"></script>
+</body>
+</html>
