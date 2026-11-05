@@ -17,28 +17,29 @@
 <body>
   <div class="app-shell">
     <header class="app-header glass-card reveal">
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <img src="/assets/icons/neoguard-logo.png" alt="NeoGuard Logo" style="width: 44px; height: 44px; border-radius: 10px; object-fit: contain;" />
-        <div>
-          <p class="eyebrow">Smart Neonatal Monitoring Cloth System</p>
-          <h1>Neo<span style="color:#38bdf8;">Guard</span><span style="color:#10b981;">.</span></h1>
+      <div class="brand-block">
+        <img src="/assets/icons/neoguard-logo.png" alt="NeoGuard Logo" class="brand-logo" />
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1>Neo<span style="color:#38bdf8;">Guard</span><span style="color:#10b981;">.</span></h1>
+            <span class="brand-tag">Neonatal Smart Cloth</span>
+          </div>
           <p class="eyebrow" id="user-name">Welcome</p>
         </div>
       </div>
       <div class="device-connect-panel">
         <label class="device-input-group" for="device-id-input">
-          <span>Serial Connection</span>
-          <input id="device-id-input" type="text" placeholder="Connect to Port ->" readonly />
+          <input id="device-id-input" type="text" placeholder="Port: Click Connect ->" readonly />
         </label>
         <button id="connect-serial-btn" type="button">Connect Port</button>
-        <a href="/" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #f6f7ff; font-weight: 600; font-size: 0.85rem;">Home</a>
-        <a href="/video" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 10px 14px; border-radius: 12px; background: rgba(0,229,255,0.12); border: 1px solid rgba(0,229,255,0.35); color: #38bdf8; font-weight: 600; font-size: 0.85rem; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <a href="/" class="header-nav-link">Home</a>
+        <a href="/video" class="header-nav-link video-nav-link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
           Demo Video
         </a>
         <button id="logout-btn" type="button" style="display: none;">Sign Out</button>
         <div class="device-pill">
-          <span>User Email</span>
+          <span>User:</span>
           <strong id="user-email">--</strong>
         </div>
       </div>
@@ -46,28 +47,28 @@
 
     <main class="dashboard-grid">
       <section class="hero-card glass-card reveal">
-        <div>
-          <p class="eyebrow">Live Safety Overview</p>
+        <div class="hero-headline">
+          <span class="eyebrow">Live Safety Overview</span>
           <h2 id="safety-condition">Awaiting device data</h2>
         </div>
         <div class="hero-statuses">
-          <div>
+          <div class="status-chip">
             <span>Heater</span>
             <strong id="heater-state">OFF</strong>
           </div>
-          <div>
+          <div class="status-chip">
             <span>Safety Relay</span>
             <strong id="relay-state">OFF</strong>
           </div>
-          <div>
+          <div class="status-chip">
             <span>Wi-Fi</span>
             <strong id="wifi-state">UNKNOWN</strong>
           </div>
-          <div>
+          <div class="status-chip">
             <span>Offline / Online</span>
             <strong id="cloud-state">WAITING</strong>
           </div>
-          <div>
+          <div class="status-chip">
             <span>Last Sync</span>
             <strong id="last-sync-time">Never</strong>
           </div>
@@ -80,7 +81,7 @@
             <p class="eyebrow">Edge AI</p>
             <h2>NeoWarm Decision Engine</h2>
           </div>
-          <p id="ai-state">Offline-ready</p>
+          <p id="ai-state" class="badge">Offline-ready</p>
         </div>
         <div class="ai-summary-grid">
           <div>
@@ -101,7 +102,7 @@
           </div>
         </div>
         <div class="ai-recommendation-card">
-          <div>
+          <div class="ai-rec-header">
             <span>AI Recommendation</span>
             <strong id="ai-recommendation">Awaiting AI decision</strong>
           </div>
@@ -113,12 +114,12 @@
         <article class="metric-card glass-card reveal">
           <span>Baby Temp</span>
           <strong id="baby-temp">--.-</strong>
-          <small>Target 36.5 to 37.5 degrees C</small>
+          <small>Target 36.5 to 37.5°C</small>
         </article>
         <article class="metric-card glass-card reveal">
           <span>SpO2</span>
           <strong id="spo2">--</strong>
-          <small>Peripheral oxygen saturation</small>
+          <small>Oxygen saturation</small>
         </article>
         <article class="metric-card glass-card reveal">
           <span>Heart Rate</span>
@@ -128,7 +129,7 @@
         <article class="metric-card glass-card reveal">
           <span>Env Temp</span>
           <strong id="env-temp">--.-</strong>
-          <small>Incubator cloth environment</small>
+          <small>Incubator cloth env</small>
         </article>
         <article class="metric-card glass-card reveal accent">
           <span>Pulse Sensor</span>
@@ -138,18 +139,33 @@
         <article class="metric-card glass-card reveal">
           <span>Heater Status</span>
           <strong id="heater-status">OFF</strong>
-          <small>AI controlled warming output</small>
+          <small>AI warming output</small>
         </article>
         <article class="metric-card glass-card reveal">
           <span>Relay Status</span>
           <strong id="relay-status">DISABLED</strong>
-          <small>Safety relay protection state</small>
+          <small>Safety protection</small>
         </article>
         <article class="metric-card glass-card reveal accent">
-          <span>Emergency Alert Card</span>
+          <span>Emergency Alert</span>
           <strong id="emergency-card">CLEAR</strong>
-          <small>Shows sensor failure, overheating, or abnormal vitals</small>
+          <small>Overheating / Abnormal</small>
         </article>
+      </section>
+
+      <section class="history-card glass-card reveal" id="history-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Data History</p>
+            <h2>Previous Device Data</h2>
+          </div>
+          <p id="history-last-live">Waiting for sync</p>
+        </div>
+        <p id="history-note">View recorded telemetry history and export local CSV.</p>
+        <div class="button-row">
+          <button id="view-history-btn" type="button">View Previous Data</button>
+          <button id="download-history-btn" type="button" class="secondary">Download CSV</button>
+        </div>
       </section>
 
       <section class="controls-card glass-card reveal">
@@ -161,75 +177,64 @@
           <p id="command-status">Ready</p>
         </div>
 
-        <div class="manual-inputs">
-          <div class="manual-input-grid">
-            <label>
-              <span>Birth Weight</span>
-              <input id="birth-weight" type="number" min="0.5" max="6" step="0.1" placeholder="2.8 kg" />
-            </label>
-            <label>
-              <span>Gestational Age</span>
-              <input id="gestational-age" type="number" min="20" max="44" step="1" placeholder="38 weeks" />
-            </label>
-            <label>
-              <span>Feeding Interval</span>
-              <input id="feeding-interval" type="number" min="15" max="360" step="5" placeholder="180 mins" />
-            </label>
-            <label>
-              <span>Sleep Duration</span>
-              <input id="sleep-duration" type="number" min="0" max="24" step="1" placeholder="16 hours" />
-            </label>
-            <label>
-              <span>Vaccination Status</span>
-              <input id="vaccination-status" type="text" placeholder="Up to date" />
-            </label>
-            <label class="manual-textarea">
-              <span>Symptoms</span>
-              <textarea id="symptoms" rows="3" placeholder="None"></textarea>
-            </label>
+        <div class="controls-body">
+          <div class="manual-inputs">
+            <div class="manual-input-grid">
+              <label>
+                <span>Birth Wt</span>
+                <input id="birth-weight" type="number" min="0.5" max="6" step="0.1" placeholder="2.8 kg" />
+              </label>
+              <label>
+                <span>Gest. Age</span>
+                <input id="gestational-age" type="number" min="20" max="44" step="1" placeholder="38 wks" />
+              </label>
+              <label>
+                <span>Feeding</span>
+                <input id="feeding-interval" type="number" min="15" max="360" step="5" placeholder="180m" />
+              </label>
+              <label>
+                <span>Sleep</span>
+                <input id="sleep-duration" type="number" min="0" max="24" step="1" placeholder="16h" />
+              </label>
+              <label>
+                <span>Vaccine</span>
+                <input id="vaccination-status" type="text" placeholder="Up to date" />
+              </label>
+              <label class="manual-textarea">
+                <span>Symptoms</span>
+                <textarea id="symptoms" rows="1" placeholder="None observed"></textarea>
+              </label>
+            </div>
+            <div class="button-row manual-actions">
+              <button id="save-profile-btn" type="button">Save AI Inputs</button>
+              <button id="reset-profile-btn" type="button" class="secondary">Reset</button>
+            </div>
           </div>
-          <div class="button-row manual-actions">
-            <button id="save-profile-btn" type="button">Save AI Inputs</button>
-            <button id="reset-profile-btn" type="button" class="secondary">Reset</button>
-          </div>
-        </div>
 
-        <div class="control-group">
-          <div>
-            <span>Heating Pad Control</span>
-            <small id="heater-mode-status">Mode: Manual</small>
-          </div>
-          <div class="button-row">
-            <button data-target="heater" data-state="auto">Auto Mode</button>
-            <button data-target="heater" data-state="on" class="secondary">Manual ON</button>
-            <button data-target="heater" data-state="off" class="secondary">Manual OFF</button>
-          </div>
-        </div>
+          <div class="hardware-controls">
+            <div class="control-group">
+              <div class="control-group-header">
+                <span>Heating Pad Control</span>
+                <small id="heater-mode-status">Mode: Manual</small>
+              </div>
+              <div class="button-row">
+                <button data-target="heater" data-state="auto">Auto</button>
+                <button data-target="heater" data-state="on" class="secondary">Manual ON</button>
+                <button data-target="heater" data-state="off" class="secondary">Manual OFF</button>
+              </div>
+            </div>
 
-        <div class="control-group">
-          <div>
-            <span>UV Sterilization</span>
-            <small>Manual relay control synced through Firebase</small>
+            <div class="control-group">
+              <div class="control-group-header">
+                <span>UV Sterilization</span>
+                <small>Safety Relay Sync</small>
+              </div>
+              <div class="button-row">
+                <button data-target="uv" data-state="on">UV ON</button>
+                <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
+              </div>
+            </div>
           </div>
-          <div class="button-row">
-            <button data-target="uv" data-state="on">UV ON</button>
-            <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="history-card glass-card reveal" id="history-card">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Data History</p>
-            <h2>Previous Device Data</h2>
-          </div>
-          <p id="history-last-live">Waiting for first sync</p>
-        </div>
-        <p id="history-note">View the previous data when the system is on.</p>
-        <div class="button-row">
-          <button id="view-history-btn" type="button">View Previous Data</button>
-          <button id="download-history-btn" type="button" class="secondary">Download CSV</button>
         </div>
       </section>
     </main>
@@ -247,6 +252,10 @@
       </div>
     </div>
   </div>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="/web/firebase-config.js"></script>
   <script src="/web/app.js"></script>
 </body>
 

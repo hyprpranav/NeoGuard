@@ -308,14 +308,19 @@ async function loadAllUsers() {
     const rows = Object.entries(users).map(([uid, user]) => {
       const role = user.role || 'operator';
       const status = (user.status || 'unknown').toUpperCase();
+      const safeName = escapeHtml(user.name || 'Unnamed user');
+      const safeEmail = escapeHtml(user.email || 'No email');
+      const cleanEmailArg = (user.email || '').replace(/'/g, "\\'");
+      const cleanNameArg = (user.name || '').replace(/'/g, "\\'");
       return `
       <tr>
-        <td>${user.name || 'Unnamed user'}</td>
-        <td>${user.email || 'No email'}</td>
+        <td>${safeName}</td>
+        <td>${safeEmail}</td>
         <td class="status-${(user.status || 'unknown')}">${status}</td>
         <td>${role}</td>
-        <td>
-          <button class="btn-reset" onclick="resetUserPassword('${user.email || ''}')">Reset Password</button>
+        <td style="white-space: nowrap;">
+          <button class="btn-view-data" onclick="openUserDataModal('${uid}', '${cleanEmailArg}', '${cleanNameArg}')">View Data</button>
+          <button class="btn-reset" onclick="resetUserPassword('${cleanEmailArg}')">Reset Password</button>
         </td>
       </tr>
     `;
@@ -327,6 +332,157 @@ async function loadAllUsers() {
     document.getElementById('user-table-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: #ff6b91;">Unable to load user list. Verify rules and admin role.</td></tr>';
   }
 }
+
+
+let currentModalUserData = {
+  uid: null,
+  email: '',
+  name: '',
+  records: [],
+  listenerRef: null
+};
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function openUserDataModal(uid, email, name) {
+  const modal = document.getElementById('admin-user-data-modal');
+  if (!modal) return;
+
+  currentModalUserData.uid = uid;
+  currentModalUserData.email = email || 'Unknown';
+  currentModalUserData.name = name || 'User';
+  currentModalUserData.records = [];
+
+  document.getElementById('modal-user-title').textContent = `${currentModalUserData.name}'s Telemetry Records`;
+  document.getElementById('modal-user-subtitle').textContent = `Account: ${currentModalUserData.email} (UID: ${uid})`;
+  document.getElementById('modal-user-email').textContent = currentModalUserData.email;
+  document.getElementById('modal-total-records').textContent = 'Loading...';
+  document.getElementById('modal-latest-temp').textContent = '--';
+  document.getElementById('modal-latest-spo2').textContent = '--';
+  document.getElementById('modal-latest-hr').textContent = '--';
+  document.getElementById('modal-latest-time').textContent = '--';
+  document.getElementById('modal-records-body').innerHTML = '<tr><td colspan="10" style="text-align: center; color: #bac4ff; padding: 24px;">Loading user records from Firebase...</td></tr>';
+
+  modal.classList.add('open');
+
+  if (currentModalUserData.listenerRef) {
+    currentModalUserData.listenerRef.off();
+  }
+
+  const telemetryRef = database.ref(`users/${uid}/telemetryHistory`).limitToLast(150);
+  currentModalUserData.listenerRef = telemetryRef;
+
+  telemetryRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      currentModalUserData.records = [];
+      document.getElementById('modal-total-records').textContent = '0';
+      document.getElementById('modal-records-body').innerHTML = `
+        <tr>
+          <td colspan="10" style="text-align: center; color: #bac4ff; padding: 32px;">
+            No telemetry records stored for this user yet.<br/>
+            <small style="color: #64748b; margin-top: 6px; display: inline-block;">
+              When <strong>${escapeHtml(email)}</strong> logs into their dashboard and connects the device, data will automatically be recorded here.
+            </small>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    const records = Object.entries(data).map(([id, rec]) => ({
+      id,
+      ...rec,
+      dateTimeFormatted: (rec.date && rec.time) ? `${rec.date} ${rec.time}` : (rec.timestamp ? new Date(rec.timestamp).toLocaleString() : '--')
+    })).reverse();
+
+    currentModalUserData.records = records;
+    document.getElementById('modal-total-records').textContent = records.length;
+
+    const latest = records[0];
+    if (latest) {
+      document.getElementById('modal-latest-temp').textContent = (latest.babyTemp != null && latest.babyTemp !== 0) ? `${Number(latest.babyTemp).toFixed(1)}°C` : '--';
+      document.getElementById('modal-latest-spo2').textContent = (latest.spo2 != null && latest.spo2 !== 0) ? `${Number(latest.spo2).toFixed(0)}%` : '--';
+      document.getElementById('modal-latest-hr').textContent = (latest.heartRate != null && latest.heartRate !== 0) ? `${Number(latest.heartRate).toFixed(0)} bpm` : '--';
+      document.getElementById('modal-latest-time').textContent = latest.dateTimeFormatted;
+    }
+
+    const rows = records.map(r => `
+      <tr>
+        <td><strong>${escapeHtml(r.dateTimeFormatted)}</strong></td>
+        <td style="color: #38bdf8; font-weight: 600;">${(r.babyTemp != null && r.babyTemp !== 0) ? Number(r.babyTemp).toFixed(1) + '°C' : '--'}</td>
+        <td>${(r.envTemp != null && r.envTemp !== 0) ? Number(r.envTemp).toFixed(1) + '°C' : '--'}</td>
+        <td style="color: #6fffb0; font-weight: 600;">${(r.spo2 != null && r.spo2 !== 0) ? Number(r.spo2).toFixed(0) + '%' : '--'}</td>
+        <td>${(r.heartRate != null && r.heartRate !== 0) ? Number(r.heartRate).toFixed(0) + ' bpm' : '--'}</td>
+        <td>${(r.pulse != null && r.pulse !== 0) ? Number(r.pulse).toFixed(0) + ' bpm' : '--'}</td>
+        <td style="color: ${r.heaterOn ? '#34d399' : '#ffd36a'}; font-weight: 600;">${r.heaterOn ? 'ON' : 'OFF'}</td>
+        <td style="color: ${r.safetyRelayOn ? '#34d399' : '#ff6b91'}; font-weight: 600;">${r.safetyRelayOn ? 'ARMED' : 'DISABLED'}</td>
+        <td><span class="badge" style="font-size: 0.72rem;">${escapeHtml(r.stateName || r.riskLevel || 'Normal')}</span></td>
+        <td style="color: ${r.emergencyAlert ? '#ff6b91' : '#6fffb0'}; font-weight: 700;">${r.emergencyAlert ? 'ALERT' : 'CLEAR'}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('modal-records-body').innerHTML = rows;
+  });
+}
+
+function closeUserDataModal() {
+  const modal = document.getElementById('admin-user-data-modal');
+  if (modal) {
+    modal.classList.remove('open');
+  }
+  if (currentModalUserData.listenerRef) {
+    currentModalUserData.listenerRef.off();
+    currentModalUserData.listenerRef = null;
+  }
+}
+
+function downloadCurrentUserDataCsv() {
+  const records = currentModalUserData.records;
+  if (!records || records.length === 0) {
+    alert('No telemetry records available to download for this user.');
+    return;
+  }
+
+  const headers = ['Date', 'Time', 'ISO_Timestamp', 'BabyTemp_C', 'EnvTemp_C', 'SpO2_Percent', 'HeartRate_BPM', 'Pulse_BPM', 'Heater', 'SafetyRelay', 'HealthScore', 'RiskLevel', 'State', 'EmergencyAlert', 'UserEmail'];
+  const rows = records.map(r => [
+    `"${r.date || ''}"`,
+    `"${r.time || ''}"`,
+    `"${r.timestamp || ''}"`,
+    r.babyTemp !== null && r.babyTemp !== undefined ? r.babyTemp : '',
+    r.envTemp !== null && r.envTemp !== undefined ? r.envTemp : '',
+    r.spo2 !== null && r.spo2 !== undefined ? r.spo2 : '',
+    r.heartRate !== null && r.heartRate !== undefined ? r.heartRate : '',
+    r.pulse !== null && r.pulse !== undefined ? r.pulse : '',
+    r.heaterOn ? 'ON' : 'OFF',
+    r.safetyRelayOn ? 'ARMED' : 'DISABLED',
+    r.healthScore !== null && r.healthScore !== undefined ? r.healthScore : '',
+    `"${r.riskLevel || 'Normal'}"`,
+    `"${r.stateName || 'STABLE'}"`,
+    r.emergencyAlert ? 'YES' : 'NO',
+    `"${currentModalUserData.email}"`
+  ].join(','));
+
+  const csvContent = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const cleanEmail = (currentModalUserData.email || 'user').replace(/[^a-zA-Z0-9]/g, '_');
+  a.download = `neoguard-${cleanEmail}-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 
 async function approveUser(uid, email) {
   if (!confirm(`Approve ${email}?`)) return;

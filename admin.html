@@ -50,19 +50,19 @@
       .sidebar {
         position: relative;
         z-index: 1;
-        width: 280px;
+        width: 250px;
         background: rgba(17, 25, 55, 0.5);
         -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
         border-right: 1px solid rgba(255, 255, 255, 0.12);
-        padding: 24px;
+        padding: 18px;
         overflow-y: auto;
       }
 
       .sidebar h1 {
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.5rem;
-        margin: 0 0 32px;
+        font-size: 1.35rem;
+        margin: 0 0 20px;
         letter-spacing: -0.04em;
       }
 
@@ -78,14 +78,15 @@
 
       .nav-btn {
         width: 100%;
-        padding: 12px 14px;
+        padding: 10px 12px;
         background: none;
         border: 1px solid transparent;
-        border-radius: 12px;
+        border-radius: 10px;
         color: #bac4ff;
         cursor: pointer;
         text-align: left;
         transition: all 200ms;
+        font-size: 0.85rem;
       }
 
       .nav-btn:hover {
@@ -103,7 +104,7 @@
         position: relative;
         z-index: 1;
         flex: 1;
-        padding: 32px;
+        padding: 20px 24px;
         overflow-y: auto;
       }
 
@@ -111,22 +112,24 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 32px;
+        margin-bottom: 18px;
       }
 
       .header h2 {
         font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
         margin: 0;
       }
 
       .btn-logout {
-        padding: 10px 16px;
+        padding: 8px 14px;
         background: rgba(255, 107, 145, 0.2);
         border: 1px solid #ff6b91;
         border-radius: 8px;
         color: #ff6b91;
         cursor: pointer;
         font-weight: 600;
+        font-size: 0.8rem;
         transition: all 200ms;
       }
 
@@ -147,9 +150,9 @@
         -webkit-backdrop-filter: blur(8px);
         backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 16px;
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 12px;
       }
 
       .user-card {
@@ -307,37 +310,41 @@
       }
 
       .devices-toolbar select {
-        padding: 10px 12px;
-        border-radius: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         background: rgba(5, 10, 30, 0.4);
         color: #f6f7ff;
+        font-size: 0.82rem;
       }
 
       .device-grid {
         display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       }
 
       .metric-card {
         background: rgba(5, 10, 30, 0.35);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 14px;
-        padding: 14px;
+        border-radius: 12px;
+        padding: 10px 12px;
       }
 
       .metric-card span {
         display: block;
         color: #bac4ff;
-        font-size: 0.8rem;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        font-weight: 500;
       }
 
       .metric-card strong {
         display: block;
-        margin-top: 8px;
-        font-size: 1.05rem;
-        line-height: 1.05;
+        margin-top: 4px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        line-height: 1.1;
         overflow-wrap: anywhere;
         word-break: break-word;
       }
@@ -358,6 +365,152 @@
       .status-danger {
         color: #ff6b91;
       }
+    
+      .btn-view-data {
+        background: rgba(56, 189, 248, 0.18);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.8rem;
+        transition: all 180ms ease;
+        margin-right: 6px;
+      }
+
+      .btn-view-data:hover {
+        background: rgba(56, 189, 248, 0.35);
+        border-color: #38bdf8;
+        transform: translateY(-1px);
+      }
+
+      /* Modal Styling for User Telemetry Records */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(3, 6, 18, 0.82);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal-card {
+        background: linear-gradient(135deg, rgba(17, 27, 60, 0.96), rgba(9, 16, 42, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 18px;
+        width: min(100%, 1150px);
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+        padding: 22px;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+      }
+
+      .modal-header h2 {
+        margin: 2px 0 0;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+      }
+
+      .btn-close-modal {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #f6f7ff;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        font-size: 1.4rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 160ms;
+      }
+
+      .btn-close-modal:hover {
+        background: rgba(255, 107, 145, 0.3);
+        border-color: #ff6b91;
+        color: #ff6b91;
+      }
+
+      .modal-summary-ribbon {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(5, 10, 30, 0.45);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .summary-chip {
+        font-size: 0.8rem;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .summary-chip span {
+        color: #bac4ff;
+      }
+
+      .summary-chip strong {
+        color: #38bdf8;
+      }
+
+      .modal-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .modal-table-container {
+        flex: 1;
+        overflow-y: auto;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(5, 10, 30, 0.3);
+      }
+
+      .user-records-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      .user-records-table th {
+        position: sticky;
+        top: 0;
+        background: rgba(14, 23, 52, 0.96);
+        z-index: 2;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .user-records-table td {
+        padding: 9px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
     </style>
   </head>
   <body>
@@ -472,6 +625,53 @@
           <h3>Authentication Settings</h3>
           <p>Email verification required: <strong>Yes</strong></p>
           <p>Admin approval required: <strong>Yes</strong></p>
+        </div>
+      </div>
+    </div>
+
+    
+    <!-- User Telemetry Records Modal -->
+    <div id="admin-user-data-modal" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <span class="hint" id="modal-user-subtitle">User Telemetry History</span>
+            <h2 id="modal-user-title">User Telemetry Records</h2>
+          </div>
+          <button class="btn-close-modal" onclick="closeUserDataModal()">&times;</button>
+        </div>
+        <div class="modal-summary-ribbon" id="modal-summary-ribbon">
+          <div class="summary-chip"><span>User:</span> <strong id="modal-user-email">--</strong></div>
+          <div class="summary-chip"><span>Total Records:</span> <strong id="modal-total-records">0</strong></div>
+          <div class="summary-chip"><span>Latest Baby Temp:</span> <strong id="modal-latest-temp">--</strong></div>
+          <div class="summary-chip"><span>Latest SpO2:</span> <strong id="modal-latest-spo2">--</strong></div>
+          <div class="summary-chip"><span>Latest Heart Rate:</span> <strong id="modal-latest-hr">--</strong></div>
+          <div class="summary-chip"><span>Last Synced:</span> <strong id="modal-latest-time">--</strong></div>
+        </div>
+        <div class="modal-toolbar">
+          <button class="btn-download" id="modal-download-csv-btn" onclick="downloadCurrentUserDataCsv()">Download User CSV</button>
+          <span class="hint" id="modal-sync-hint">Stored in Firebase Realtime Database for this user</span>
+        </div>
+        <div class="modal-table-container">
+          <table class="user-records-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Baby Temp</th>
+                <th>Env Temp</th>
+                <th>SpO2</th>
+                <th>Heart Rate</th>
+                <th>Pulse</th>
+                <th>Heater</th>
+                <th>Relay</th>
+                <th>Risk / Status</th>
+                <th>Alert</th>
+              </tr>
+            </thead>
+            <tbody id="modal-records-body">
+              <tr><td colspan="10" style="text-align: center; color: #bac4ff; padding: 24px;">Loading records...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -1,5 +1,23 @@
 const DEVICE_ID = 'neoguard-one (Serial)';
 
+let auth = null;
+let database = null;
+let currentUser = null;
+let lastFirebaseSaveTime = 0;
+const FIREBASE_SAVE_INTERVAL_MS = 3000;
+
+if (window.firebase && window.NEOGUARD_FIREBASE_CONFIG) {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(window.NEOGUARD_FIREBASE_CONFIG);
+    }
+    auth = firebase.auth();
+    database = firebase.database();
+  } catch (err) {
+    console.warn('Firebase init error:', err);
+  }
+}
+
 const state = {
   latest: null,
   isLive: false,
@@ -107,6 +125,7 @@ function render(data) {
   
   const now = new Date();
   const timeStr = now.toLocaleTimeString();
+  const dateStr = now.toLocaleDateString();
   elements.lastSyncTime.textContent = timeStr;
   if (elements.historyLastLive) {
     elements.historyLastLive.textContent = `Last frame synced at ${timeStr}`;
@@ -115,6 +134,8 @@ function render(data) {
   // Push to local rolling telemetry history buffer (up to 50 records)
   state.history.unshift({
     timestamp: timeStr,
+    date: dateStr,
+    isoTimestamp: now.toISOString(),
     babyTemp: data.babyTemp,
     envTemp: data.envTemp,
     spo2: data.spo2,
@@ -127,12 +148,112 @@ function render(data) {
     uvOn: data.uvOn,
     emergencyAlert: data.emergencyAlert
   });
-  if (state.history.length > 50) {
+  if (state.history.length > 100) {
     state.history.pop();
   }
 
   updateAiWidgets(data);
   applyLiveState();
+
+  // Save to Firebase Realtime Database associated with the logged-in user
+  saveTelemetryToFirebase(data);
+}
+
+function saveTelemetryToFirebase(data) {
+  if (!database || !currentUser || !currentUser.uid) {
+    return;
+  }
+
+  const now = Date.now();
+  const isUrgent = data.emergencyAlert || (state.latest && state.latest.heaterOn !== data.heaterOn);
+  if (!isUrgent && (now - lastFirebaseSaveTime < FIREBASE_SAVE_INTERVAL_MS)) {
+    return;
+  }
+  lastFirebaseSaveTime = now;
+
+  const currentDate = new Date();
+  const dateStr = currentDate.toLocaleDateString();
+  const timeStr = currentDate.toLocaleTimeString();
+  const isoStr = currentDate.toISOString();
+
+  const payload = {
+    timestamp: isoStr,
+    date: dateStr,
+    time: timeStr,
+    epoch: now,
+    babyTemp: Number(data.babyTemp) || 0,
+    babyTempValid: Boolean(data.babyTempValid),
+    envTemp: Number(data.envTemp) || 0,
+    envTempValid: Boolean(data.envTempValid),
+    spo2: Number(data.spo2) || 0,
+    spo2Valid: Boolean(data.spo2Valid),
+    heartRate: Number(data.heartRate) || 0,
+    heartRateValid: Boolean(data.heartRateValid),
+    pulse: Number(data.pulse) || 0,
+    heaterOn: Boolean(data.heaterOn),
+    heaterAutoMode: Boolean(data.heaterAutoMode),
+    safetyRelayOn: Boolean(data.safetyRelayOn),
+    healthScore: Number(data.healthScore) || 0,
+    riskLevel: data.riskLevel || 'Normal',
+    stateName: data.stateName || 'STABLE',
+    emergencyAlert: Boolean(data.emergencyAlert),
+    uvOn: Boolean(data.uvOn),
+    userEmail: currentUser.email || 'unknown',
+    userName: currentUser.name || 'User',
+    device: DEVICE_ID
+  };
+
+  // 1. Push into user's historical telemetry records in Firebase
+  database.ref(`users/${currentUser.uid}/telemetryHistory`).push(payload).catch((err) => {
+    console.warn('Failed to push telemetry to Firebase:', err.message);
+  });
+
+  // 2. Update user's latest telemetry and last sync status
+  database.ref(`users/${currentUser.uid}/latestTelemetry`).set(payload).catch(() => {});
+  database.ref(`users/${currentUser.uid}/lastConnectedAt`).set(isoStr).catch(() => {});
+
+  if (elements.cloudState) {
+    elements.cloudState.textContent = 'ONLINE (CLOUD SYNCED)';
+    elements.cloudState.className = 'safe';
+  }
+}
+
+function loadUserSavedTelemetry(uid) {
+  if (!database || !uid) return;
+  try {
+    const ref = database.ref(`users/${uid}/telemetryHistory`).limitToLast(100);
+    ref.on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        const records = Object.entries(val).map(([id, r]) => ({
+          id,
+          timestamp: r.time || (r.timestamp ? new Date(r.timestamp).toLocaleTimeString() : '--'),
+          date: r.date || (r.timestamp ? new Date(r.timestamp).toLocaleDateString() : ''),
+          isoTimestamp: r.timestamp,
+          babyTemp: r.babyTemp,
+          envTemp: r.envTemp,
+          spo2: r.spo2,
+          heartRate: r.heartRate,
+          pulse: r.pulse,
+          healthScore: r.healthScore,
+          riskLevel: r.riskLevel || 'Normal',
+          stateName: r.stateName || 'STABLE',
+          heaterOn: r.heaterOn,
+          uvOn: r.uvOn,
+          emergencyAlert: r.emergencyAlert
+        })).reverse(); // latest first
+
+        if (!state.isLive || state.history.length === 0) {
+          state.history = records;
+          if (records[0] && elements.historyLastLive) {
+            elements.historyLastLive.textContent = `Last cloud record: ${records[0].date} ${records[0].timestamp}`;
+          }
+        }
+      }
+    });
+  } catch (err) {
+    console.warn('Failed to load user saved telemetry:', err);
+  }
 }
 
 function updateAiWidgets(data) {
@@ -154,11 +275,11 @@ function updateAiWidgets(data) {
 
 function applyLiveState() {
   if (state.isLive) {
-    elements.cloudState.textContent = 'ONLINE (SERIAL)';
+    elements.cloudState.textContent = currentUser ? 'ONLINE (CLOUD SYNCED)' : 'ONLINE (SERIAL)';
     elements.cloudState.className = 'safe';
-    elements.wifiState.textContent = 'SERIAL';
+    elements.wifiState.textContent = 'SERIAL ACTIVE';
     elements.wifiState.className = 'safe';
-    elements.commandStatus.textContent = `System live via Port.`;
+    elements.commandStatus.textContent = `Device connected. Telemetry streaming live.`;
   } else {
     elements.cloudState.textContent = 'OFFLINE';
     elements.cloudState.className = 'danger';
@@ -289,13 +410,18 @@ function readManualProfileForm() {
 
 function openHistoryModal() {
   if (!elements.historyModal) return;
+  const accountEmail = currentUser ? currentUser.email : (elements.userEmail ? elements.userEmail.textContent : 'Local Session');
   if (!state.history || state.history.length === 0) {
-    elements.historyList.innerHTML = '<p style="color: #bac4ff; text-align: center; padding: 24px;">No telemetry frames recorded yet. Connect your device via USB to stream live data.</p>';
+    elements.historyList.innerHTML = `<p style="color: #bac4ff; text-align: center; padding: 24px;">No telemetry frames recorded yet for <strong>${accountEmail}</strong>. Connect your device via USB to stream and record live data into your account.</p>`;
   } else {
-    elements.historyList.innerHTML = state.history.map((item) => `
+    elements.historyList.innerHTML = `
+      <div style="font-size: 0.78rem; color: #38bdf8; margin-bottom: 10px; padding: 8px 12px; background: rgba(56, 189, 248, 0.12); border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25);">
+        Telemetry records stored in Firebase for account: <strong>${accountEmail}</strong> (${state.history.length} records)
+      </div>
+    ` + state.history.map((item) => `
       <div class="history-row">
-        <strong>${item.stateName} &mdash; Baby: ${formatNumber(item.babyTemp, 1, '°C')} | Env: ${formatNumber(item.envTemp, 1, '°C')} (Health: ${formatNumber(item.healthScore, 0, '/100')})</strong>
-        <small>SpO2: ${formatNumber(item.spo2, 0, '%')} | HR: ${formatNumber(item.heartRate, 0, ' bpm')} | Pulse: ${formatNumber(item.pulse, 0, ' bpm')} | Heater: ${item.heaterOn ? 'ON' : 'OFF'} | UV: ${item.uvOn ? 'ON' : 'OFF'} &bull; ${item.timestamp}</small>
+        <strong>${item.stateName || 'STABLE'} &mdash; Baby: ${formatNumber(item.babyTemp, 1, '°C')} | Env: ${formatNumber(item.envTemp, 1, '°C')} (Health: ${formatNumber(item.healthScore, 0, '/100')})</strong>
+        <small>SpO2: ${formatNumber(item.spo2, 0, '%')} | HR: ${formatNumber(item.heartRate, 0, ' bpm')} | Pulse: ${formatNumber(item.pulse, 0, ' bpm')} | Heater: ${item.heaterOn ? 'ON' : 'OFF'} | UV: ${item.uvOn ? 'ON' : 'OFF'} &bull; ${(item.date ? item.date + ' ' : '')}${item.timestamp}</small>
       </div>
     `).join('');
   }
@@ -314,10 +440,13 @@ function downloadHistoryCsv() {
     alert('No telemetry data collected yet to download.');
     return;
   }
-  const headers = ['Timestamp', 'State', 'BabyTemp_C', 'EnvTemp_C', 'SpO2_Percent', 'HeartRate_BPM', 'Pulse_BPM', 'HealthScore', 'RiskLevel', 'Heater', 'UV', 'EmergencyAlert'];
+  const accountEmail = currentUser ? currentUser.email : (elements.userEmail ? elements.userEmail.textContent : 'operator');
+  const headers = ['Date', 'Time', 'ISO_Timestamp', 'State', 'BabyTemp_C', 'EnvTemp_C', 'SpO2_Percent', 'HeartRate_BPM', 'Pulse_BPM', 'HealthScore', 'RiskLevel', 'Heater', 'UV', 'EmergencyAlert', 'AccountEmail'];
   const rows = state.history.map((h) => [
-    `"${h.timestamp}"`,
-    `"${h.stateName}"`,
+    `"${h.date || new Date().toLocaleDateString()}"`,
+    `"${h.timestamp || new Date().toLocaleTimeString()}"`,
+    `"${h.isoTimestamp || new Date().toISOString()}"`,
+    `"${h.stateName || 'STABLE'}"`,
     h.babyTemp !== null && h.babyTemp !== undefined ? h.babyTemp : '',
     h.envTemp !== null && h.envTemp !== undefined ? h.envTemp : '',
     h.spo2 !== null && h.spo2 !== undefined ? h.spo2 : '',
@@ -327,14 +456,16 @@ function downloadHistoryCsv() {
     `"${h.riskLevel || 'Normal'}"`,
     h.heaterOn ? 'ON' : 'OFF',
     h.uvOn ? 'ON' : 'OFF',
-    h.emergencyAlert ? 'YES' : 'NO'
+    h.emergencyAlert ? 'YES' : 'NO',
+    `"${accountEmail}"`
   ].join(','));
   const csvContent = [headers.join(','), ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `neoguard-telemetry-${new Date().toISOString().slice(0, 10)}.csv`;
+  const safeName = (accountEmail || 'telemetry').replace(/[^a-zA-Z0-9]/g, '_');
+  a.download = `neoguard-${safeName}-records-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -386,6 +517,9 @@ function bindControls() {
   if (logoutBtn) {
     logoutBtn.style.display = 'inline-block';
     logoutBtn.addEventListener('click', () => {
+      if (auth) {
+        auth.signOut().catch(() => {});
+      }
       localStorage.removeItem('neoguard-auth');
       localStorage.removeItem('neoguard-user');
       window.location.href = '/auth.html';
@@ -403,19 +537,55 @@ function initializeDashboard() {
 
   applyLiveState();
 
-  try {
-    const user = JSON.parse(localStorage.getItem('neoguard-user') || '{}');
-    if (user.email) {
-      elements.userEmail.textContent = user.email;
-      const displayName = user.name || user.email.split('@')[0];
-      elements.userName.textContent = `Welcome, ${displayName}`;
-    } else {
+  // 1. Check Firebase Auth
+  if (auth) {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || user.email.split('@')[0]
+        };
+        elements.userEmail.textContent = user.email;
+        elements.userName.textContent = `Welcome, ${currentUser.name}`;
+        localStorage.setItem('neoguard-user', JSON.stringify({ uid: user.uid, email: user.email, name: currentUser.name }));
+        loadUserSavedTelemetry(user.uid);
+      } else {
+        // Fallback to cached user if available
+        try {
+          const cached = JSON.parse(localStorage.getItem('neoguard-user') || '{}');
+          if (cached.email && cached.uid) {
+            currentUser = cached;
+            elements.userEmail.textContent = cached.email;
+            elements.userName.textContent = `Welcome, ${cached.name || cached.email.split('@')[0]}`;
+            loadUserSavedTelemetry(cached.uid);
+          } else {
+            elements.userName.textContent = 'Welcome, Operator';
+            elements.userEmail.textContent = 'Serial Mode';
+          }
+        } catch (e) {
+          elements.userName.textContent = 'Welcome, Operator';
+          elements.userEmail.textContent = 'Serial Mode';
+        }
+      }
+    });
+  } else {
+    // Non-Firebase fallback
+    try {
+      const user = JSON.parse(localStorage.getItem('neoguard-user') || '{}');
+      if (user.email) {
+        currentUser = user;
+        elements.userEmail.textContent = user.email;
+        const displayName = user.name || user.email.split('@')[0];
+        elements.userName.textContent = `Welcome, ${displayName}`;
+      } else {
+        elements.userName.textContent = 'Welcome, Operator';
+        elements.userEmail.textContent = 'Serial Mode';
+      }
+    } catch (e) {
       elements.userName.textContent = 'Welcome, Operator';
       elements.userEmail.textContent = 'Serial Mode';
     }
-  } catch (e) {
-    elements.userName.textContent = 'Welcome, Operator';
-    elements.userEmail.textContent = 'Serial Mode';
   }
 }
 
