@@ -407,14 +407,14 @@ function updateControlButtonsUI(data) {
       btnUvOn.classList.remove('secondary');
       btnUvOff.classList.add('secondary');
       if (elements.uvModeStatus) {
-        elements.uvModeStatus.textContent = 'Status: ON (Pin 26 HIGH)';
+        elements.uvModeStatus.textContent = 'Status: ON';
         elements.uvModeStatus.style.color = '#38bdf8';
       }
     } else {
       btnUvOn.classList.add('secondary');
       btnUvOff.classList.remove('secondary');
       if (elements.uvModeStatus) {
-        elements.uvModeStatus.textContent = 'Status: OFF (Pin 26 LOW)';
+        elements.uvModeStatus.textContent = 'Status: OFF';
         elements.uvModeStatus.style.color = '#94a3b8';
       }
     }

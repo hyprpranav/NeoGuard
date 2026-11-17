@@ -186,7 +186,7 @@ void setup() {
   // Pre-load pins before setting OUTPUT to prevent startup contact click
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Pin 27 ON 24/7 for sensor rail
   digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);  // Pin 25 default OFF
-  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 26 default LOW (OFF: only goes HIGH when UV clicked)
+  digitalWrite(UV_RELAY_PIN, HIGH);           // Pin 26 default OFF (HIGH de-energizes active-LOW relay)
 
   pinMode(SENSOR_POWER_PIN, OUTPUT);
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Ensure Pin 27 energized for sensors
@@ -195,7 +195,7 @@ void setup() {
   digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);
 
   pinMode(UV_RELAY_PIN, OUTPUT);
-  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 26 default LOW (OFF: only goes HIGH when UV clicked)
+  digitalWrite(UV_RELAY_PIN, HIGH);           // Pin 26 default OFF (HIGH de-energizes active-LOW relay)
 
   // 2. Initialize Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
@@ -509,7 +509,7 @@ void setHeater(bool enabled) {
 
 void setUv(bool enabled) {
   uvOn = enabled;
-  digitalWrite(UV_RELAY_PIN, enabled ? HIGH : LOW);
+  digitalWrite(UV_RELAY_PIN, enabled ? LOW : HIGH);
 }
 
 void setSafetyRelay(bool enabled) {
