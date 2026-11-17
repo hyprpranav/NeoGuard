@@ -186,7 +186,7 @@ void setup() {
   // Pre-load pins before setting OUTPUT to prevent startup contact click
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Pin 27 ON 24/7 for sensor rail
   digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);  // Pin 26 default OFF
-  digitalWrite(UV_RELAY_PIN, RELAY_OFF);      // Pin 25 default OFF
+  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 25 default LOW (OFF: only goes HIGH when UV clicked)
 
   pinMode(SENSOR_POWER_PIN, OUTPUT);
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Ensure Pin 27 energized for sensors
@@ -195,7 +195,7 @@ void setup() {
   digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);
 
   pinMode(UV_RELAY_PIN, OUTPUT);
-  digitalWrite(UV_RELAY_PIN, RELAY_OFF);
+  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 25 default LOW (OFF: only goes HIGH when UV clicked)
 
   // 2. Initialize Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
@@ -509,7 +509,7 @@ void setHeater(bool enabled) {
 
 void setUv(bool enabled) {
   uvOn = enabled;
-  digitalWrite(UV_RELAY_PIN, enabled ? RELAY_ON : RELAY_OFF);
+  digitalWrite(UV_RELAY_PIN, enabled ? HIGH : LOW);
 }
 
 void setSafetyRelay(bool enabled) {
@@ -586,10 +586,12 @@ void handleSerialCommands() {
         if (!heaterAutoMode) setHeater(false);
       }
 
-      if (line.indexOf("\"uvOn\":true") >= 0) {
+      if (line.indexOf("\"uvOn\":true") >= 0 || line.indexOf("\"uv\":true") >= 0 || line.indexOf("\"uvAction\":\"on\"") >= 0) {
         setUv(true);
-      } else if (line.indexOf("\"uvOn\":false") >= 0) {
+        sendSerialData();
+      } else if (line.indexOf("\"uvOn\":false") >= 0 || line.indexOf("\"uv\":false") >= 0 || line.indexOf("\"uvAction\":\"off\"") >= 0) {
         setUv(false);
+        sendSerialData();
       }
     }
   }
