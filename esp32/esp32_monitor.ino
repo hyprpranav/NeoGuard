@@ -57,10 +57,10 @@
 
 #define DHTTYPE DHT11
 
-// Active-HIGH Relay Module Logic:
-// ESP32 digital outputs produce HIGH (3.3V) to energize/turn ON relays, and LOW (0V) to turn OFF.
-#define RELAY_ON   HIGH
-#define RELAY_OFF  LOW
+// Active-LOW Relay Module Logic:
+// Most ESP32 relay modules energize/turn ON when signal is LOW, turn OFF when HIGH.
+#define RELAY_ON   LOW
+#define RELAY_OFF  HIGH
 
 // OLED Display Configuration
 #define OLED_WIDTH   128
@@ -182,18 +182,20 @@ void setup() {
   Serial.println(F(" Hardware: MAX30102 + DS18B20 + DHT11 + OLED      "));
   Serial.println(F("=================================================="));
 
-  // 1. Initialize Relay Outputs (Active-HIGH Logic)
-  // Pin 27 (Sensor Power Rail) remains energized 24/7 (HIGH)
+  // 1. Initialize Relay Outputs (Active-LOW Logic)
+  // Pre-load pins before setting OUTPUT to prevent startup contact click
+  digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Pin 27 ON 24/7 for sensor rail
+  digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);  // Pin 26 default OFF
+  digitalWrite(UV_RELAY_PIN, RELAY_OFF);      // Pin 25 default OFF
+
   pinMode(SENSOR_POWER_PIN, OUTPUT);
-  digitalWrite(SENSOR_POWER_PIN, HIGH);
+  digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Ensure Pin 27 energized for sensors
 
-  // Pin 26 (Incubator Heater) starts OFF (LOW: 0V)
   pinMode(HEATER_RELAY_PIN, OUTPUT);
-  digitalWrite(HEATER_RELAY_PIN, LOW);
+  digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);
 
-  // Pin 25 (UV Sterilization) starts OFF (LOW: 0V) — strictly prevents high output on boot
   pinMode(UV_RELAY_PIN, OUTPUT);
-  digitalWrite(UV_RELAY_PIN, LOW);
+  digitalWrite(UV_RELAY_PIN, RELAY_OFF);
 
   // 2. Initialize Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
@@ -477,33 +479,24 @@ void applyDecision(const DecisionResult& decision) {
   // SENSOR POWER SUPPLY RELAY (PIN 27) MUST REMAIN ON 24/7
   setSafetyRelay(true);
 
-  emergencyAlertActive = decision.emergency;
+  if (decision.emergency || decision.sensorFault) {
+    emergencyAlertActive = true;
+    setHeater(false); // Safety cut-off on emergency
+    return;
+  }
 
-  // Closed-loop thermal regulation ONLY runs when in Auto Mode!
+  emergencyAlertActive = false;
+
+  // Closed-loop heater regulation in Auto Mode
   if (heaterAutoMode) {
-    // In Auto Mode: intelligently maintain neonatal body temperature between 35.0C and 37.0C
-    if (babyTempValid) {
-      if (babyTemp < 35.0f) {
-        // Hypothermia boundary: actively turn ON heater
-        setHeater(true);
-      } else if (babyTemp < 36.5f) {
-        // Below ideal normothermia (36.5C - 37.5C): turn ON heater
-        setHeater(true);
-      } else if (babyTemp < 36.8f && envTempValid && envTemp < 28.0f) {
-        // Outer environment is chilly: maintain gentle warming
-        setHeater(true);
-      } else if (babyTemp >= 37.0f) {
-        // Safe target temperature reached: turn OFF heater
-        setHeater(false);
-      }
-      // Hysteresis: between 36.5C and 37.0C, preserve current heater state to avoid cycling
+    if (decision.heatingRequired) {
+      setHeater(true);
+    } else if (decision.coolingRequired) {
+      setHeater(false);
     } else {
-      // In Auto mode without baby temperature sensor attached, safe default is OFF
       setHeater(false);
     }
   }
-  // When in Manual Mode (!heaterAutoMode):
-  // NEVER override heaterOn! The user's manual command (Manual ON or Manual OFF) stays locked.
 }
 
 // =================================================================================
@@ -581,41 +574,22 @@ void handleSerialCommands() {
     String line = Serial.readStringUntil('\n');
     line.trim();
     if (line.length() > 0) {
-      bool stateChanged = false;
-
-      // 1. Auto Mode Command
-      if (line.indexOf("\"heaterAutoMode\":true") >= 0 || line.indexOf("\"heater\":\"auto\"") >= 0) {
+      if (line.indexOf("\"heaterAutoMode\":true") >= 0) {
         heaterAutoMode = true;
-        stateChanged = true;
-        applyDecision(currentDecision);
       } else if (line.indexOf("\"heaterAutoMode\":false") >= 0) {
         heaterAutoMode = false;
-        stateChanged = true;
       }
 
-      // 2. Heater Manual Commands (Explicit ON/OFF forces Manual Mode)
-      if (line.indexOf("\"heaterOn\":true") >= 0 || line.indexOf("\"heater\":\"on\"") >= 0) {
-        heaterAutoMode = false;
-        setHeater(true);
-        stateChanged = true;
-      } else if (line.indexOf("\"heaterOn\":false") >= 0 || line.indexOf("\"heater\":\"off\"") >= 0) {
-        heaterAutoMode = false;
-        setHeater(false);
-        stateChanged = true;
+      if (line.indexOf("\"heaterOn\":true") >= 0) {
+        if (!heaterAutoMode) setHeater(true);
+      } else if (line.indexOf("\"heaterOn\":false") >= 0) {
+        if (!heaterAutoMode) setHeater(false);
       }
 
-      // 3. UV Sterilization Relay (Pin 25) Commands
-      if (line.indexOf("\"uvOn\":true") >= 0 || line.indexOf("\"uv\":true") >= 0 || line.indexOf("\"uvAction\":\"on\"") >= 0) {
+      if (line.indexOf("\"uvOn\":true") >= 0) {
         setUv(true);
-        stateChanged = true;
-      } else if (line.indexOf("\"uvOn\":false") >= 0 || line.indexOf("\"uv\":false") >= 0 || line.indexOf("\"uvAction\":\"off\"") >= 0) {
+      } else if (line.indexOf("\"uvOn\":false") >= 0) {
         setUv(false);
-        stateChanged = true;
-      }
-
-      // Send immediate serial feedback frame to web dashboard
-      if (stateChanged) {
-        sendSerialData();
       }
     }
   }
