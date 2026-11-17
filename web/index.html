@@ -218,20 +218,20 @@
                 <small id="heater-mode-status">Mode: Manual</small>
               </div>
               <div class="button-row">
-                <button data-target="heater" data-state="auto">Auto</button>
-                <button data-target="heater" data-state="on" class="secondary">Manual ON</button>
-                <button data-target="heater" data-state="off" class="secondary">Manual OFF</button>
+                <button id="btn-heater-auto" data-target="heater" data-state="auto">Auto</button>
+                <button id="btn-heater-on" data-target="heater" data-state="on" class="secondary">Manual ON</button>
+                <button id="btn-heater-off" data-target="heater" data-state="off" class="secondary">Manual OFF</button>
               </div>
             </div>
 
             <div class="control-group">
               <div class="control-group-header">
                 <span>UV Sterilization</span>
-                <small>Safety Relay Sync</small>
+                <small id="uv-mode-status">Status: OFF (Pin 25 LOW)</small>
               </div>
               <div class="button-row">
-                <button data-target="uv" data-state="on">UV ON</button>
-                <button data-target="uv" data-state="off" class="secondary">UV OFF</button>
+                <button id="btn-uv-on" data-target="uv" data-state="on" class="secondary">UV ON</button>
+                <button id="btn-uv-off" data-target="uv" data-state="off">UV OFF</button>
               </div>
             </div>
           </div>

@@ -59,6 +59,12 @@ const elements = {
   aiReason: document.getElementById('ai-reason'),
   heaterStatus: document.getElementById('heater-status'),
   heaterModeStatus: document.getElementById('heater-mode-status'),
+  uvModeStatus: document.getElementById('uv-mode-status'),
+  btnHeaterAuto: document.getElementById('btn-heater-auto'),
+  btnHeaterOn: document.getElementById('btn-heater-on'),
+  btnHeaterOff: document.getElementById('btn-heater-off'),
+  btnUvOn: document.getElementById('btn-uv-on'),
+  btnUvOff: document.getElementById('btn-uv-off'),
   relayStatus: document.getElementById('relay-status'),
   emergencyCard: document.getElementById('emergency-card'),
   commandStatus: document.getElementById('command-status'),
@@ -117,11 +123,11 @@ function render(data) {
 
   elements.heaterState.textContent = data.heaterOn ? 'ON' : 'OFF';
   elements.heaterState.className = data.heaterOn ? 'safe' : 'warning';
-  if (elements.heaterModeStatus) {
-    elements.heaterModeStatus.textContent = data.heaterAutoMode ? 'Mode: Auto' : 'Mode: Manual';
-  }
   elements.relayState.textContent = data.safetyRelayOn ? 'ARMED' : 'DISABLED';
   elements.relayState.className = data.safetyRelayOn ? 'safe' : 'danger';
+
+  // Synchronize hardware button styling with live state
+  updateControlButtonsUI(data);
   
   const now = new Date();
   const timeStr = now.toLocaleTimeString();
@@ -352,9 +358,72 @@ async function readLoop() {
   }
 }
 
+function updateControlButtonsUI(data) {
+  if (!data) return;
+
+  // 1. Synchronize Heating Pad Controls UI
+  const isAuto = Boolean(data.heaterAutoMode);
+  const isHeaterOn = Boolean(data.heaterOn);
+
+  const btnAuto = elements.btnHeaterAuto || document.querySelector('button[data-target="heater"][data-state="auto"]');
+  const btnHeaterOn = elements.btnHeaterOn || document.querySelector('button[data-target="heater"][data-state="on"]');
+  const btnHeaterOff = elements.btnHeaterOff || document.querySelector('button[data-target="heater"][data-state="off"]');
+
+  if (btnAuto && btnHeaterOn && btnHeaterOff) {
+    if (isAuto) {
+      btnAuto.classList.remove('secondary');
+      btnHeaterOn.classList.add('secondary');
+      btnHeaterOff.classList.add('secondary');
+      if (elements.heaterModeStatus) {
+        elements.heaterModeStatus.textContent = isHeaterOn 
+          ? 'Mode: Auto (Warming ON)' 
+          : 'Mode: Auto (Target 35-37°C)';
+      }
+    } else {
+      btnAuto.classList.add('secondary');
+      if (isHeaterOn) {
+        btnHeaterOn.classList.remove('secondary');
+        btnHeaterOff.classList.add('secondary');
+        if (elements.heaterModeStatus) {
+          elements.heaterModeStatus.textContent = 'Mode: Manual (Forced ON)';
+        }
+      } else {
+        btnHeaterOn.classList.add('secondary');
+        btnHeaterOff.classList.remove('secondary');
+        if (elements.heaterModeStatus) {
+          elements.heaterModeStatus.textContent = 'Mode: Manual (Forced OFF)';
+        }
+      }
+    }
+  }
+
+  // 2. Synchronize UV Sterilization Controls UI
+  const isUvOn = Boolean(data.uvOn);
+  const btnUvOn = elements.btnUvOn || document.querySelector('button[data-target="uv"][data-state="on"]');
+  const btnUvOff = elements.btnUvOff || document.querySelector('button[data-target="uv"][data-state="off"]');
+
+  if (btnUvOn && btnUvOff) {
+    if (isUvOn) {
+      btnUvOn.classList.remove('secondary');
+      btnUvOff.classList.add('secondary');
+      if (elements.uvModeStatus) {
+        elements.uvModeStatus.textContent = 'Status: ON (Pin 25 HIGH)';
+        elements.uvModeStatus.style.color = '#38bdf8';
+      }
+    } else {
+      btnUvOn.classList.add('secondary');
+      btnUvOff.classList.remove('secondary');
+      if (elements.uvModeStatus) {
+        elements.uvModeStatus.textContent = 'Status: OFF (Pin 25 LOW)';
+        elements.uvModeStatus.style.color = '#94a3b8';
+      }
+    }
+  }
+}
+
 async function sendCommand(target, controlState) {
   if (!outputStream) {
-    elements.commandStatus.textContent = 'Port not connected';
+    elements.commandStatus.textContent = 'Port not connected. Click "Connect Port" first.';
     return;
   }
 
@@ -364,7 +433,12 @@ async function sendCommand(target, controlState) {
     let payload;
     if (target === 'heater') {
       if (controlState === 'auto') {
-        payload = JSON.stringify({ heaterAutoMode: true }) + '\n';
+        payload = JSON.stringify({ heaterAutoMode: true, heater: 'auto' }) + '\n';
+        updateControlButtonsUI({ 
+          heaterAutoMode: true, 
+          heaterOn: false, 
+          uvOn: state.latest ? state.latest.uvOn : false 
+        });
       } else {
         const isOn = controlState === 'on';
         if (isOn) {
@@ -374,15 +448,29 @@ async function sendCommand(target, controlState) {
             return;
           }
         }
-        payload = JSON.stringify({ heaterAutoMode: false, heaterOn: isOn }) + '\n';
+        payload = JSON.stringify({ heaterAutoMode: false, heaterOn: isOn, heater: isOn ? 'on' : 'off' }) + '\n';
+        updateControlButtonsUI({ 
+          heaterAutoMode: false, 
+          heaterOn: isOn, 
+          uvOn: state.latest ? state.latest.uvOn : false 
+        });
       }
+    } else if (target === 'uv') {
+      const isUvOn = controlState === 'on';
+      payload = JSON.stringify({ uvOn: isUvOn, uv: isUvOn, uvAction: isUvOn ? 'on' : 'off' }) + '\n';
+      updateControlButtonsUI({ 
+        heaterAutoMode: state.latest ? state.latest.heaterAutoMode : true, 
+        heaterOn: state.latest ? state.latest.heaterOn : false, 
+        uvOn: isUvOn 
+      });
     } else {
       payload = JSON.stringify({ [target + 'On']: controlState === 'on' }) + '\n';
     }
 
     await outputStream.write(payload);
-    elements.commandStatus.textContent = `${target.toUpperCase()} ${controlState.toUpperCase()} sent to ESP32`;
+    elements.commandStatus.textContent = `${target.toUpperCase()} ${controlState.toUpperCase()} command sent successfully`;
   } catch (error) {
+    console.error('Serial command failed:', error);
     elements.commandStatus.textContent = `Send Error: ${error.message}`;
   }
 }
