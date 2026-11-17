@@ -15,8 +15,8 @@
   3. Active Warning Buzzer (Pin 18)
   4. SSD1306 OLED Display 128x64 (I2C 0x3C, SDA Pin 21, SCL Pin 22)
   5. MAX30102 Optical Heart Rate & SpO2 Sensor (I2C 0x57, SDA Pin 21, SCL Pin 22)
-  6. Auxiliary / UV Sterilization Relay (Pin 25, Active-LOW)
-  7. Incubator Heating Pad Relay (Pin 26, Active-LOW)
+  6. Auxiliary / UV Sterilization Relay (Pin 26, Active-HIGH)
+  7. Incubator Heating Pad Relay (Pin 25, Active-LOW)
   8. Sensor Power Supply Relay (Pin 27, Active-LOW: Always ON 24/7)
   9. Analog Pulse Sensor (Pin 34, Analog Input)
 
@@ -50,8 +50,8 @@
 #define BUZZER_PIN             18    // Digital Output for Warning Buzzer
 #define I2C_SDA_PIN            21    // I2C SDA for MAX30102 & OLED Display
 #define I2C_SCL_PIN            22    // I2C SCL for MAX30102 & OLED Display
-#define UV_RELAY_PIN           25    // Digital Output: UV Sterilization Relay (Pin 25)
-#define HEATER_RELAY_PIN       26    // Digital Output: Incubator Heater Relay (Pin 26)
+#define UV_RELAY_PIN           26    // Digital Output: UV Sterilization Relay (Pin 26)
+#define HEATER_RELAY_PIN       25    // Digital Output: Incubator Heater Relay (Pin 25)
 #define SENSOR_POWER_PIN       27    // Digital Output: Sensor Power Supply Relay (Pin 27: Always ON 24/7)
 #define PULSE_SENSOR_PIN       34    // Analog Input for Secondary Pulse Sensor (Pin 34)
 
@@ -185,8 +185,8 @@ void setup() {
   // 1. Initialize Relay Outputs (Active-LOW Logic)
   // Pre-load pins before setting OUTPUT to prevent startup contact click
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Pin 27 ON 24/7 for sensor rail
-  digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);  // Pin 26 default OFF
-  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 25 default LOW (OFF: only goes HIGH when UV clicked)
+  digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);  // Pin 25 default OFF
+  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 26 default LOW (OFF: only goes HIGH when UV clicked)
 
   pinMode(SENSOR_POWER_PIN, OUTPUT);
   digitalWrite(SENSOR_POWER_PIN, RELAY_ON);   // Ensure Pin 27 energized for sensors
@@ -195,7 +195,7 @@ void setup() {
   digitalWrite(HEATER_RELAY_PIN, RELAY_OFF);
 
   pinMode(UV_RELAY_PIN, OUTPUT);
-  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 25 default LOW (OFF: only goes HIGH when UV clicked)
+  digitalWrite(UV_RELAY_PIN, LOW);            // Pin 26 default LOW (OFF: only goes HIGH when UV clicked)
 
   // 2. Initialize Buzzer
   pinMode(BUZZER_PIN, OUTPUT);
